@@ -25,11 +25,13 @@ func Decoder(ndMsg NoDecoderMsg) (error, *WsMsg) {
 		msg.SessionId = ndMsg.SessionId
 		switch msg.Cmd {
 		case Subscription:
-		//订阅消息
+			//订阅消息
+			//logic.SubHelper.AddSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
 		case Publish:
 			//发布消息
 		case UnSubscription:
 			//取消订阅消息
+			//logic.SubHelper.UnSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
 		case Notice:
 			//通知消息
 		case Request:

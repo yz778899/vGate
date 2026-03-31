@@ -56,10 +56,10 @@ func (this *CoroutineGroup) Accept(msg V1Msg) {
 //type Handler[T V1Msg] func(msg T)
 
 // 添加处理器
-func (this *CoroutineGroup) Handler(Fun func(msg V1Msg)) CoroutineGroup {
+func (this *CoroutineGroup) Handler(fun func(msg V1Msg)) CoroutineGroup {
 
-	if Fun != nil {
-		hdl := Handler{Fun: Fun}
+	if fun != nil {
+		hdl := Handler{Fun: fun}
 		for _, slave := range this.Slave {
 			slave.MsgHandler = hdl
 		}

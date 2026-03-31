@@ -7,13 +7,15 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/14132465/vGate/coroutine"
+	"github.com/14132465/vGate/net/app"
+	"github.com/14132465/vGate/net/coroutine"
 	"github.com/14132465/vGate/net/data"
 	"github.com/14132465/vGate/net/handler"
 
 	ws "github.com/gorilla/websocket"
 )
 
+// WsServer结构体表示一个WebSocket服务器，包含端口、路径、协程池和消息处理器等信息
 type WsServer struct {
 	Port    string
 	Path    string
@@ -22,12 +24,14 @@ type WsServer struct {
 	//fun     func(msg data.WsMsg)
 }
 
+// 配置 WsServer 的端口和路径
 func (this *WsServer) Config(Port int, Path string) *WsServer {
 	this.Port = strconv.Itoa(Port)
 	this.Path = Path
 	return this
 }
 
+// 创建 WsServer 实例
 func NewWsServer() *WsServer {
 	ws := WsServer{}
 	ws.pool = coroutine.NewCoroutineGroup(1, "ws_msg_group", 4)
@@ -38,8 +42,13 @@ func NewWsServer() *WsServer {
 			_, wsMsg := data.Decoder(nd)
 
 			fmt.Print("wsMsg ######## ,", wsMsg)
-			ws.handler.OnMessage(wsMsg)
-			//ws.fun(*wsMsg)
+			session := app.SessionManager.GetSession(wsMsg.SessionId)
+			if session != nil {
+				ws.handler.OnMessage(session.Conn, wsMsg)
+			} else {
+				//"未找到会话ID  可能已经下线了;
+				fmt.Printf("未找到会话ID %d 对应的服务器\n", wsMsg.SessionId)
+			}
 
 		} else {
 			fmt.Printf("无法解析的消息类型 %v ", msg)
@@ -50,11 +59,13 @@ func NewWsServer() *WsServer {
 	return &ws
 }
 
+// 配置消息处理器
 func (this *WsServer) Handler(handler handler.HandlerInterface) *WsServer {
 	this.handler = handler
 	return this
 }
 
+// 运行 WsServer，监听指定端口并处理 WebSocket 连接和消息
 func (this *WsServer) Run() *WsServer {
 	http.HandleFunc(this.Path, this.handleWsServer)
 	log.Println("WsServer run , port = " + this.Port)
@@ -72,6 +83,7 @@ var upgrader = ws.Upgrader{
 	},
 }
 
+// 处理 WebSocket 连接和消息
 func (this *WsServer) handleWsServer(w http.ResponseWriter, r *http.Request) {
 	// 升级 HTTP 连接为 WsServer
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -81,7 +93,7 @@ func (this *WsServer) handleWsServer(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	session := this.handler.OnConnect(&w, r)
+	session := this.handler.OnConnect(conn)
 
 	for {
 		// 读取客户端消息
@@ -110,7 +122,4 @@ func (this *WsServer) handleWsServer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	this.handler.OnDisconnect(session)
-}
-
-func (this *WsServer) Test() {
 }

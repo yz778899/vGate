@@ -1,17 +1,32 @@
 package data
 
 import (
-	"net/http"
+	"encoding/json"
 	"sync"
 	"sync/atomic"
+
+	"github.com/gorilla/websocket"
 )
 
 // Session会话结构体，包含客户端ID、会话状态、HTTP请求和响应对象等信息
 type Session struct {
 	UUID   int64 //客户端ID
 	Status int8  //会话状态 0：未连接 1：已连接 2：已断开
-	Resp   *http.ResponseWriter
-	Req    *http.Request
+	Conn   *websocket.Conn
+
+	// Resp *http.ResponseWriter
+	// Req  *http.Request
+}
+
+// 发送消息
+func (this *Session) SendMessage(msg *WsMsg) {
+
+	by, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
+	this.Conn.WriteJSON(by)
+	//this.Conn.WriteMessage(websocket.TextMessage, by)
 }
 
 type SessionManager struct {

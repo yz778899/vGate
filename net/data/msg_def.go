@@ -28,6 +28,8 @@ type BaseMsg struct {
 type SubscriptionMsg = struct {
 	BaseMsg
 	ServerName string `json:"serverName"` //服务器名称
+	SecretKey  string `json:"secretKey"`  //密钥 核对密钥是否与网关一致，否则无法订阅
+
 }
 
 // 取消订阅消息 服务器向网关发起取消订阅请求
