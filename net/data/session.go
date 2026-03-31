@@ -1,7 +1,8 @@
 package data
 
 import (
-	"encoding/json"
+	"fmt"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 
@@ -13,20 +14,21 @@ type Session struct {
 	UUID   int64 //客户端ID
 	Status int8  //会话状态 0：未连接 1：已连接 2：已断开
 	Conn   *websocket.Conn
-
-	// Resp *http.ResponseWriter
-	// Req  *http.Request
+	//Map    *sync.Map //可存数据用于扩展
 }
 
 // 发送消息
 func (this *Session) SendMessage(msg *WsMsg) {
-
-	by, err := json.Marshal(msg)
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf(" panic: %v\n", err)
+			fmt.Printf(" Stack Info:\n %s \n", debug.Stack())
+		}
+	}()
+	err := this.Conn.WriteJSON(msg)
 	if err != nil {
-		return
+		fmt.Printf("SendMessage  error %v \n", err)
 	}
-	this.Conn.WriteJSON(by)
-	//this.Conn.WriteMessage(websocket.TextMessage, by)
 }
 
 type SessionManager struct {

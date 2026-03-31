@@ -20,15 +20,15 @@ func Decoder(ndMsg NoDecoderMsg) (error, *WsMsg) {
 
 	msg := WsMsg{}
 	err := json.Unmarshal([]byte(ndMsg.Msg), &msg)
+	msg.SessionId = ndMsg.SessionId
 
-	if err != nil {
-		msg.SessionId = ndMsg.SessionId
+	if err == nil {
 		switch msg.Cmd {
 		case Subscription:
 			//订阅消息
 			//logic.SubHelper.AddSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
-		case Publish:
-			//发布消息
+		//case Publish:
+		//发布消息
 		case UnSubscription:
 			//取消订阅消息
 			//logic.SubHelper.UnSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
@@ -42,7 +42,7 @@ func Decoder(ndMsg NoDecoderMsg) (error, *WsMsg) {
 			//fmt.Printf("未知的消息指令 %v ", msg.Cmd)
 			msg.Cmd = Request
 			msg.Content = json.RawMessage(ndMsg.Msg)
-			return err, &msg
+			//return nil, &msg
 		}
 	} else {
 

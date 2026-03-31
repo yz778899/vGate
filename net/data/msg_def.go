@@ -8,8 +8,9 @@ const (
 	//取消订阅
 	UnSubscription = "unsubscription"
 	//发布消息   网关收到客户端的消息，根据订阅规则来发布 通知到所有匹配的服务器
-	Publish = "publish"
-	//通知 网关广播给所有服务器
+	//Publish = "publish"
+
+	//通知 网关广播给所有服务器 或者 先由服务器通知网关，网关再转发到所有服务器
 	Notice = "notice"
 	//请求 客户端发起请求
 	Request = "request"
@@ -36,13 +37,13 @@ type SubscriptionMsg = struct {
 type UnSubscriptionMsg = SubscriptionMsg
 
 // 发布消息 客户端向服务器发布消息
-type PublishMsg struct {
-	BaseMsg
-	ClientId string          `json:"clientId"` //发布消息的客户端ID
-	Content  json.RawMessage `json:"content"`  // 保留原始 JSON
-}
+// type PublishMsg struct {
+// 	BaseMsg
+// 	ClientId string          `json:"clientId"` //发布消息的客户端ID
+// 	Content  json.RawMessage `json:"content"`  // 保留原始 JSON
+// }
 
-// 通知消息 服务器向客户端发起通知
+// 通知消息 向所有服务器 发起通知 , 服务器无需订阅
 type NoticeMsg struct {
 	BaseMsg
 	SecretKey string          `json:"secretKey"` //密钥

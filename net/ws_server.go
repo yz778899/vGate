@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/coroutine"
 	"github.com/14132465/vGate/net/data"
 	"github.com/14132465/vGate/net/handler"
 
@@ -17,9 +15,9 @@ import (
 
 // WsServer结构体表示一个WebSocket服务器，包含端口、路径、协程池和消息处理器等信息
 type WsServer struct {
-	Port    string
-	Path    string
-	pool    *coroutine.CoroutineGroup
+	Port string
+	Path string
+	//pool    *coroutine.CoroutineGroup
 	handler handler.HandlerInterface
 	//fun     func(msg data.WsMsg)
 }
@@ -34,28 +32,28 @@ func (this *WsServer) Config(Port int, Path string) *WsServer {
 // 创建 WsServer 实例
 func NewWsServer() *WsServer {
 	ws := WsServer{}
-	ws.pool = coroutine.NewCoroutineGroup(1, "ws_msg_group", 4)
+	//ws.pool = coroutine.NewCoroutineGroup(1, "ws_msg_group", 4)
 
-	fun := func(msg coroutine.V1Msg) {
+	// fun := func(msg coroutine.V1Msg) {
 
-		if nd, ok := msg.(data.NoDecoderMsg); ok {
-			_, wsMsg := data.Decoder(nd)
+	// 	if nd, ok := msg.(data.NoDecoderMsg); ok {
+	// 		_, wsMsg := data.Decoder(nd)
 
-			fmt.Print("wsMsg ######## ,", wsMsg)
-			session := app.SessionManager.GetSession(wsMsg.SessionId)
-			if session != nil {
-				ws.handler.OnMessage(session.Conn, wsMsg)
-			} else {
-				//"未找到会话ID  可能已经下线了;
-				fmt.Printf("未找到会话ID %d 对应的服务器\n", wsMsg.SessionId)
-			}
+	// 		fmt.Print("wsMsg ######## ,", wsMsg)
+	// 		session := app.SessionManager.GetSession(wsMsg.SessionId)
+	// 		if session != nil {
+	// 			ws.handler.OnMessage(session.Conn, wsMsg)
+	// 		} else {
+	// 			//"未找到会话ID  可能已经下线了;
+	// 			fmt.Printf("未找到会话ID %d 对应的服务器\n", wsMsg.SessionId)
+	// 		}
 
-		} else {
-			fmt.Printf("无法解析的消息类型 %v ", msg)
-		}
-	}
+	// 	} else {
+	// 		fmt.Printf("无法解析的消息类型 %v ", msg)
+	// 	}
+	// }
 
-	ws.pool.Handler(fun)
+	// ws.pool.Handler(fun)
 	return &ws
 }
 
@@ -97,29 +95,36 @@ func (this *WsServer) handleWsServer(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// 读取客户端消息
-		messageType, msg, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("读取消息失败:", err)
+			log.Println("关闭通道:", err)
+			this.handler.OnDisconnect(session)
 			break
 		}
+
+		fmt.Printf("网关收到消息 msg = %v \n", string(msg))
 
 		var theMsg data.NoDecoderMsg
 
 		theMsg = data.NoDecoderMsg{
 			SessionId: session.UUID,
 			Msg:       string(msg),
-			SnId:      rand.Intn(len(this.pool.Slave)), //够slave取模就可以了
+			SnId:      rand.Intn(1024),
 		}
 
-		this.pool.Accept(theMsg)
+		var v data.NoDecoderMsg = theMsg
+		_, WsMsg := data.Decoder(v)
+		this.handler.OnMessage(conn, WsMsg)
+
+		//this.pool.Accept(theMsg)
 
 		//log.Printf("收到消息: %s\n", msg)
 
 		// 原样返回消息（Echo）
-		if err := conn.WriteMessage(messageType, msg); err != nil {
-			log.Println("发送消息失败:", err)
-			break
-		}
+		// if err := conn.WriteMessage(messageType, msg); err != nil {
+		// 	log.Println("发送消息失败:", err)
+		// 	break
+		// }
 	}
 	this.handler.OnDisconnect(session)
 }

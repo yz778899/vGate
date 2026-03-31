@@ -86,7 +86,7 @@ func (this *Coroutine) Handler(msg V1Msg) {
 func (this *Coroutine) Accept(msg V1Msg) {
 	defer this.mutex.Unlock()
 	this.mutex.Lock()
+	fmt.Printf("  		接收到新消息  当前未处理消息数量 = %v  + 1 \n", this.queue.Len())
 	this.queue.PushBack(msg)
-	fmt.Printf("  		接收到新消息  当前未处理消息数量 = %v  \n", this.queue.Len())
 
 }

@@ -1,51 +1,56 @@
 package data
 
-// func BuildSubscriptionMsg(topic string, serverName string) *SubscriptionMsg {
-// 	return &SubscriptionMsg{
-// 		BaseMsg:    BaseMsg{Cmd: Subscription},
-// 		Topic:      topic,
-// 		ServerName: serverName,
-// 	}
-// }
+import "encoding/json"
 
-// func BuildUnSubscriptionMsg(topic string, serverName string) *UnSubscriptionMsg {
-// 	return &UnSubscriptionMsg{
-// 		BaseMsg:    BaseMsg{Cmd: UnSubscription},
-// 		Topic:      topic,
-// 		ServerName: serverName,
-// 	}
-// }
+//构建 订阅 的消息
+func BuildSubscriptionMsg(topic string, serverName string, secretKey string) *SubscriptionMsg {
+	return &SubscriptionMsg{
+		BaseMsg: BaseMsg{Cmd: Subscription, Topic: topic},
 
+		ServerName: serverName,
+		SecretKey:  secretKey,
+	}
+}
+
+//构建 取消订阅 的消息
+func BuildUnSubscriptionMsg(topic string, serverName string) *UnSubscriptionMsg {
+	return &UnSubscriptionMsg{
+		BaseMsg:    BaseMsg{Cmd: UnSubscription, Topic: topic},
+		ServerName: serverName,
+	}
+}
+
+//构建 发布 的消息
 // func BuildPublishMsg(clientId string, topic string, content string) *PublishMsg {
 // 	return &PublishMsg{
-// 		BaseMsg:  BaseMsg{Cmd: Publish},
+// 		BaseMsg:  BaseMsg{Cmd: Subscription, Topic: topic},
 // 		ClientId: clientId,
-// 		Topic:    topic,
-// 		Content:  content,
+// 		Content:  json.RawMessage(content),
 // 	}
 // }
 
-// func BuildNoticeMsg(secretKey string, topic string, content string) *NoticeMsg {
-// 	return &NoticeMsg{
-// 		BaseMsg:   BaseMsg{Cmd: Notice},
-// 		SecretKey: secretKey,
-// 		Topic:     topic,
-// 		Content:   content,
-// 	}
-// }
+//构建 通知 的消息
+func BuildNoticeMsg(secretKey string, topic string, content string) *NoticeMsg {
+	return &NoticeMsg{
+		BaseMsg: BaseMsg{Cmd: Notice, Topic: topic},
 
-// func BuildRequestMsg(topic string, content string) *RequestMsg {
-// 	return &RequestMsg{
-// 		BaseMsg: BaseMsg{Cmd: Request},
-// 		Topic:   topic,
-// 		Content: content,
-// 	}
-// }
+		SecretKey: secretKey,
+		Content:   json.RawMessage(content),
+	}
+}
 
-// func BuildResponseMsg(topic string, content string) *ResponseMsg {
-// 	return &ResponseMsg{
-// 		BaseMsg: BaseMsg{Cmd: Response},
-// 		Topic:   topic,
-// 		Content: content,
-// 	}
-// }
+//构建 客户端请求 的消息
+func BuildRequestMsg(topic string, content []byte) *RequestMsg {
+	return &RequestMsg{
+		BaseMsg: BaseMsg{Cmd: Request, Topic: topic},
+		Content: json.RawMessage(content),
+	}
+}
+
+//构建 客户端请求 的消息
+func BuildResponseMsg(topic string, content []byte) *ResponseMsg {
+	return &ResponseMsg{
+		BaseMsg: BaseMsg{Cmd: Response, Topic: topic},
+		Content: json.RawMessage(content),
+	}
+}

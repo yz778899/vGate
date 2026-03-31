@@ -1,7 +1,8 @@
 package data
 
 import (
-	"encoding/json"
+	"fmt"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 
@@ -18,12 +19,17 @@ type Server struct {
 }
 
 // 发送消息
-func (this *Server) SendMessage(msg *WsMsg) {
-	by, err := json.Marshal(msg)
+func (this *Server) SendMessage(msg any) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf(" panic: %v\n", err)
+			fmt.Printf(" Stack Info:\n %s \n", debug.Stack())
+		}
+	}()
+	err := this.Conn.WriteJSON(msg)
 	if err != nil {
-		return
+		fmt.Printf("SendMessage  error %v \n", err)
 	}
-	this.Conn.WriteJSON(by)
 }
 
 type ServerManager struct {
@@ -44,13 +50,25 @@ func init() {
 	ServerManagerInstance.uuid.Store(10000*10000*20 - 1000) //初始值设置为一个较大的数[20亿]，避免与实际客户端ID冲突
 }
 
-// 根据客户端ID获取会话信息
-func (sm *ServerManager) GetServer(uuid int64) *Server {
+// 根据客户端ID获取会话信息 , 只读不创建
+func (sm *ServerManager) GetServerOnly(uuid int64) *Server {
 	defer sm.mutex.RLocker().Unlock()
 	sm.mutex.RLocker().Lock()
 	if Server, ok := sm.ServerMap[uuid]; ok {
 		return Server
 	}
+	return nil
+}
+
+// 根据客户端ID获取会话信息
+func (sm *ServerManager) GetAndCreateServer(uuid int64) *Server {
+	defer sm.mutex.Unlock()
+	sm.mutex.Lock()
+	if Server, ok := sm.ServerMap[uuid]; ok {
+		return Server
+	}
+	//上面只读，这里有可能要写了
+
 	//如果在会话管理器中找不到对应的会话信息，则创建一个新的Server对象并返回
 	session := SessionManagerInstance.GetSession(uuid)
 	if session != nil {
@@ -59,6 +77,7 @@ func (sm *ServerManager) GetServer(uuid int64) *Server {
 			Status: session.Status,
 			Conn:   session.Conn,
 		}
+
 		return sm.ServerMap[uuid]
 	}
 	return nil
@@ -94,4 +113,18 @@ func (sm *ServerManager) UpdateServerStatus(uuid int64, status int8) {
 	if Server, ok := sm.ServerMap[uuid]; ok {
 		Server.Status = status
 	}
+}
+
+// 取得所有服务器
+func (sm *ServerManager) GetAlls() []*Server {
+	defer sm.mutex.RLocker().Unlock()
+	sm.mutex.RLocker().Lock()
+	lst := make([]*Server, len(sm.ServerMap))
+	for _, v := range sm.ServerMap {
+		if v != nil {
+			lst = append(lst, v)
+		}
+	}
+	return lst
+
 }

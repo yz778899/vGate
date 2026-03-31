@@ -57,6 +57,23 @@ func (this *SubscriptionHelper) UnSubscriptionInfo(topic string, server *data.Se
 			break
 		}
 	}
+}
+
+// 服务器断开，需要清除所有相关的订阅数据
+func (this *SubscriptionHelper) ServerClose(server *data.Server) {
+	this.Lock()
+	defer this.Unlock()
+
+	for topic, list := range this.SubscriptionMap {
+		for i, sub := range list {
+			if sub.Server == server {
+				// 从切片中移除该订阅信息
+				this.SubscriptionMap[topic] = append(list[:i], list[i+1:]...)
+				break
+			}
+		}
+
+	}
 
 }
 
