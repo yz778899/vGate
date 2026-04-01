@@ -17,7 +17,7 @@ type WsHandlerInterface interface {
 
 // MsgHandlerInterface 单条消息处理接口
 type MsgHandlerInterface interface {
-	Topic() string // 处理器对应的主题
+	GetTopic() string // 处理器对应的主题
 	// 核心生命周期方法
 	Init() error          // 初始化
 	BeforeProcess() error // 处理前
@@ -31,7 +31,7 @@ type MsgHandlerInterface interface {
 type MsgHandlerCreate struct {
 	Topic string
 	//创建实例的方法
-	CreateFunc func(topic string, session *data.Session, msg *data.WsMsg) *BaseMsgHandler
+	CreateFunc func(topic string, session *data.Session, msg *data.WsMsg) MsgHandlerInterface
 }
 
 //type HandlerFunc func(session *data.Session, msg *data.WsMsg)

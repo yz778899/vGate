@@ -3,6 +3,9 @@ package handler
 import (
 	"fmt"
 	"sync"
+
+	"github.com/14132465/vGate/net/data"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // Registry 处理器注册中心
@@ -11,11 +14,18 @@ type Registry struct {
 	mu                sync.RWMutex
 }
 
+var (
+	RegistryInstance *Registry
+)
+
 // NewRegistry 创建注册中心
 func NewRegistry() *Registry {
-	return &Registry{
-		MsgHandlerCreates: make(map[string]MsgHandlerCreate),
+	if RegistryInstance == nil {
+		RegistryInstance = &Registry{
+			MsgHandlerCreates: make(map[string]MsgHandlerCreate),
+		}
 	}
+	return RegistryInstance
 }
 
 // Register 注册处理器
@@ -63,4 +73,42 @@ func (r *Registry) ListTopics() []string {
 		topics = append(topics, topic)
 	}
 	return topics
+}
+
+// 创建一个处理器，并控制它的生周期运行
+func (r *Registry) RunHandler(msg *data.WsMsg, session *data.Session) error {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(fmt.Printf("处理消息时发生错误: %v\n", err))
+		}
+	}()
+
+	creator, ok := RegistryInstance.GetMsgHandlerCreate(msg.Topic)
+	if ok {
+
+		hdl := creator.CreateFunc(msg.Topic, session, msg)
+
+		//初始化
+		err := hdl.Init()
+		if err != nil {
+			return err
+		}
+		//处理前
+		err = hdl.BeforeProcess()
+		if err != nil {
+			return err
+		}
+		//处理中
+		err = hdl.Process()
+		if err != nil {
+			return err
+		}
+		//处理后
+		hdl.AfterProcess()
+
+	} else {
+		log.Error("### 缺少 MsgHandler 对应 topic 是 " + msg.Topic + " ，该消息将丢弃处理 !\n")
+	}
+	return nil
 }

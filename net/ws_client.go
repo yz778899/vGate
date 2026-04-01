@@ -56,7 +56,6 @@ func (this *WsClient) Connect(onConnectedCallBack func(conn *websocket.Conn)) {
 	defer conn.Close()
 
 	//连接成功
-	//this.Conn = conn
 	session := this.handler.OnConnect(conn)
 	this.Session = session
 
@@ -81,11 +80,9 @@ func (this *WsClient) Connect(onConnectedCallBack func(conn *websocket.Conn)) {
 		}
 
 		fmt.Print(theMsg)
-		// 设置读取超时
-		this.Conn.SetReadDeadline(time.Now().Add(time.Duration(app.VGate.Config.Gate.ReadOverTime) * time.Second))
 
 		var v data.NoDecoderMsg = theMsg
-		_, WsMsg := data.Decoder(v)
+		WsMsg, _ := data.ServerDecoder(v)
 		this.handler.OnMessage(conn, WsMsg)
 	}
 }
@@ -107,7 +104,8 @@ func (this *WsClient) sendHeartbeat() {
 			log.Printf("发送 heartbeatMsg 失败: %v", err)
 			return
 		}
+		// 设置读取超时
+		this.Conn.SetReadDeadline(time.Now().Add(time.Duration(app.VGate.Config.Gate.ReadOverTime) * time.Second))
 		log.Println("发送 heartbeatMsg")
-
 	}
 }

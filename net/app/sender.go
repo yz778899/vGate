@@ -1,4 +1,4 @@
-package logic
+package app
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 
 	"github.com/14132465/vGate/net/data"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
 )
 
@@ -48,35 +49,44 @@ func (this *sender) Config(isServer bool, serverName string, secretKey string) *
 //secretKey
 
 // 通知所有服务端
-func (this *sender) Notice(topic string, msg *data.WsMsg) error {
+func (this *sender) Notice(topic string, msg any) error {
 	if !this.isServer {
 		return errors.New("客户端不能使用该方法!")
 	}
-	return this.sendMsg(data.Notice, topic, msg)
+	return this.sendMsg(0, data.Notice, topic, msg)
 }
 
-// 响应
-func (this *sender) Response(topic string, msg *data.WsMsg) error {
+// 响应 request
+// func (this *sender) Response(userId int64, msg data.BaseMsgInterFace) error {
+// 	if !this.isServer {
+// 		return errors.New("客户端不能使用该方法!")
+// 	}
+// 	return this.sendMsg(userId, data.Response, msg.GetTopic(), msg.GetContent())
+// }
+
+// 响应 request
+func (this *sender) Resp(userId int64, topic string, msg any) error {
 	if !this.isServer {
 		return errors.New("客户端不能使用该方法!")
 	}
-	return this.sendMsg(data.Response, topic, msg)
+	return this.sendMsg(userId, data.Response, topic, msg)
 }
 
 // 请求,
-func (this *sender) Request(topic string, msg *data.WsMsg) error {
+func (this *sender) Request(userId int64, topic string, msg any) error {
 
 	if this.isServer {
 		return errors.New("服务器不能使用该方法!")
 	}
-	return this.sendMsg(data.Request, topic, msg)
+	return this.sendMsg(userId, data.Request, topic, msg)
 }
 
 // 发送消息到网关
-func (this *sender) sendMsg(cmd string, topic string, msg *data.WsMsg) error {
+func (this *sender) sendMsg(userId int64, cmd string, topic string, msg any) error {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Printf("sendMsg Exception : %v\n", err)
+			log.Error(fmt.Printf(" panic: %v\n", err))
+			log.Error(fmt.Printf(" Stack Info:\n %s \n", debug.Stack()))
 		}
 	}()
 	if this.Conn == nil {
@@ -90,33 +100,20 @@ func (this *sender) sendMsg(cmd string, topic string, msg *data.WsMsg) error {
 		//连接可用
 		var sendMsg any
 		switch cmd {
+		case data.Notice:
+			sendMsg = data.BuildNoticeMsg(VGate.Config.Gate.SecretKey, topic, content)
 		case data.Request:
-			sendMsg = data.BuildResponseMsg(topic, content)
+			sendMsg = data.BuildRequestMsg(userId, topic, content)
 		case data.Response:
-			sendMsg = data.BuildRequestMsg(topic, content)
+			sendMsg = data.BuildResponseMsg(userId, topic, content)
 		default:
-			{
-				//TODO 未定义的cmd
-			}
+
+			log.Error("要发送的消息类型 在意料中外 ， 将会丢弃消息")
+			return nil
 		}
-
-		//sendMsg = data.BuildResponseMsg(topic, content)
-
-		// by, err := json.Marshal(sendMsg)
-		// if err != nil {
-		// 	return err
-		// }
-		// this.Conn.WriteJSON(by)
-
-		defer func() {
-			if err := recover(); err != nil {
-				fmt.Printf(" panic: %v\n", err)
-				fmt.Printf(" Stack Info:\n %s \n", debug.Stack())
-			}
-		}()
 		err = this.Conn.WriteJSON(sendMsg)
 		if err != nil {
-			fmt.Printf("SendMessage  error %v \n", err)
+			log.Error("SendMessage  error  %v \n", err)
 		}
 
 	}

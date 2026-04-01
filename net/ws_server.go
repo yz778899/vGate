@@ -95,8 +95,10 @@ func (this *WsServer) wsServerHandler(w http.ResponseWriter, r *http.Request) {
 			SnId:      rand.Intn(1024),
 		}
 
-		var v data.NoDecoderMsg = theMsg
-		_, WsMsg := data.Decoder(v)
+		WsMsg, _ := data.GateDecoder(theMsg)
+
+		fmt.Printf("处理后的消息 msg = %#v \n", WsMsg)
+
 		this.handler.OnMessage(conn, WsMsg)
 
 	}

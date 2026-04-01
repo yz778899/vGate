@@ -30,27 +30,28 @@ func BuildUnSubscriptionMsg(topic string, serverName string) *UnSubscriptionMsg 
 // }
 
 //构建 通知 的消息
-func BuildNoticeMsg(secretKey string, topic string, content string) *NoticeMsg {
+func BuildNoticeMsg(secretKey string, topic string, content []byte) *NoticeMsg {
 	return &NoticeMsg{
-		BaseMsg: BaseMsg{Cmd: Notice, Topic: topic},
+		BaseMsg: BaseMsg{Cmd: Notice, Topic: topic, Content: json.RawMessage(content)},
 
 		SecretKey: secretKey,
-		Content:   json.RawMessage(content),
 	}
 }
 
 //构建 客户端请求 的消息
-func BuildRequestMsg(topic string, content []byte) *RequestMsg {
+func BuildRequestMsg(sessionId int64, topic string, content []byte) *RequestMsg {
 	return &RequestMsg{
-		BaseMsg: BaseMsg{Cmd: Request, Topic: topic},
-		Content: json.RawMessage(content),
+		BaseMsg:   BaseMsg{Cmd: Request, Topic: topic},
+		Content:   json.RawMessage(content),
+		SessionId: sessionId,
 	}
 }
 
 //构建 客户端请求 的消息
-func BuildResponseMsg(topic string, content []byte) *ResponseMsg {
+func BuildResponseMsg(sessionId int64, topic string, content []byte) *ResponseMsg {
 	return &ResponseMsg{
-		BaseMsg: BaseMsg{Cmd: Response, Topic: topic},
-		Content: json.RawMessage(content),
+		BaseMsg:   BaseMsg{Cmd: Response, Topic: topic},
+		Content:   json.RawMessage(content),
+		SessionId: sessionId,
 	}
 }

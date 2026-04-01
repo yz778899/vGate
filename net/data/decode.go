@@ -15,38 +15,59 @@ func (this NoDecoderMsg) MsgSnId() int {
 	return this.SnId
 }
 
-// 解码消息
-func Decoder(ndMsg NoDecoderMsg) (error, *WsMsg) {
+// 服务端  解码消息，将 NoDecoderMsg 转换为 WsMsg
+func ServerDecoder(ndMsg NoDecoderMsg) (*WsMsg, error) {
+	var msg WsMsg
 
-	msg := WsMsg{}
-	err := json.Unmarshal([]byte(ndMsg.Msg), &msg)
-	msg.SessionId = ndMsg.SessionId
-
-	if err == nil {
-		switch msg.Cmd {
-		case Subscription:
-			//订阅消息
-			//logic.SubHelper.AddSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
-		//case Publish:
-		//发布消息
-		case UnSubscription:
-			//取消订阅消息
-			//logic.SubHelper.UnSubscriptionInfo(msg.Topic, ServerManagerInstance.GetSessionById(msg.SessionId).Server)
-		case Notice:
-			//通知消息
-		case Request:
-			//请求消息
-		case Response:
-			//回复消息
-		default:
-			//fmt.Printf("未知的消息指令 %v ", msg.Cmd)
-			msg.Cmd = Request
-			msg.Content = json.RawMessage(ndMsg.Msg)
-			//return nil, &msg
+	// 解析 JSON
+	if err := json.Unmarshal([]byte(ndMsg.Msg), &msg); err != nil {
+		// 解析失败时，返回未知命令的消息
+		msg = WsMsg{
+			BaseMsg: BaseMsg{
+				Cmd:   Unknown,
+				Topic: "",
+			},
+			SessionId: ndMsg.SessionId,
+			Content:   json.RawMessage(ndMsg.Msg),
 		}
-	} else {
+		return &msg, err
+	}
+	return &msg, nil
+}
 
+// 网关 Decoder 解码消息，将 NoDecoderMsg 转换为 WsMsg
+func GateDecoder(ndMsg NoDecoderMsg) (*WsMsg, error) {
+	var msg WsMsg
+
+	// 解析 JSON
+	if err := json.Unmarshal([]byte(ndMsg.Msg), &msg); err != nil {
+		// 解析失败时，返回未知命令的消息
+		msg = WsMsg{
+			BaseMsg: BaseMsg{
+				Cmd:   Unknown,
+				Topic: "",
+			},
+			SessionId: ndMsg.SessionId,
+			Content:   json.RawMessage(ndMsg.Msg),
+		}
+		return &msg, err
 	}
 
-	return err, &msg
+	// 根据命令类型设置 SessionId
+	switch msg.Cmd {
+	case Response, Notice:
+		// SessionId 保持原样
+		return &msg, nil
+	case Request, Heartbeat, Subscription, UnSubscription:
+		//Request 需要设置 SessionId
+		msg.SessionId = ndMsg.SessionId
+		return &msg, nil
+
+	default:
+		// 未知命令：设置 SessionId 并标记为 Unknown
+		msg.SessionId = ndMsg.SessionId
+		msg.Cmd = Unknown
+		msg.Content = json.RawMessage(ndMsg.Msg)
+		return &msg, nil
+	}
 }

@@ -18,12 +18,33 @@ const (
 	Response = "response"
 	//心跳 收到心跳后 网关会立即回复
 	Heartbeat = "heartbeat"
+	//未知指令
+	Unknown = "unknown"
 )
+
+type BaseMsgInterFace interface {
+	GetCmd() string
+	GetTopic() string
+	GetContent() json.RawMessage
+}
 
 // 基础消息
 type BaseMsg struct {
-	Cmd   string `json:"cmd"`   //消息指令 如：订阅Subscription、发布Publish、通知Notice、请求Request、回复Response等
-	Topic string `json:"topic"` //订阅主题
+	Cmd     string          `json:"cmd"`     //消息指令 如：订阅Subscription、发布Publish、通知Notice、请求Request、回复Response等
+	Topic   string          `json:"topic"`   //订阅主题
+	Content json.RawMessage `json:"content"` // 保留原始 JSON
+
+}
+
+func (this *BaseMsg) GetCmd() string {
+	return this.Cmd
+}
+
+func (this *BaseMsg) GetTopic() string {
+	return this.Topic
+}
+func (this *BaseMsg) GetContent() json.RawMessage {
+	return this.Content
 }
 
 //心跳
@@ -31,8 +52,14 @@ type heartbeatMsg struct {
 	Cmd string `json:"cmd"` //消息指令 如：订阅Subscription、发布Publish、通知Notice、请求Request、回复Response等
 }
 
+var heartbeatMsgInstance *heartbeatMsg
+
+//心跳消息
 func HeartbeatMsg() *heartbeatMsg {
-	return &heartbeatMsg{Cmd: Heartbeat}
+	if heartbeatMsgInstance == nil {
+		heartbeatMsgInstance = &heartbeatMsg{Cmd: Heartbeat}
+	}
+	return heartbeatMsgInstance
 }
 
 // 订阅消息 服务器向网关发起订阅请求
@@ -56,8 +83,7 @@ type UnSubscriptionMsg = SubscriptionMsg
 // 通知消息 向所有服务器 发起通知 , 服务器无需订阅
 type NoticeMsg struct {
 	BaseMsg
-	SecretKey string          `json:"secretKey"` //密钥
-	Content   json.RawMessage `json:"content"`   // 保留原始 JSON
+	SecretKey string `json:"secretKey"` //密钥
 }
 
 // 请求消息 服务器向客户端发起请求

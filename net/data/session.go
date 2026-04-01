@@ -90,3 +90,14 @@ func (sm *SessionManager) UpdateSessionStatus(uuid int64, status int8) {
 		session.Status = status
 	}
 }
+
+// 变更sessionID
+func (sm *SessionManager) ChangeId(uuid int64, newId int64) {
+	defer sm.mutex.Unlock()
+	sm.mutex.Lock()
+	if session, ok := sm.sessionMap[uuid]; ok {
+		session.UUID = newId
+		delete(sm.sessionMap, uuid)
+		sm.sessionMap[newId] = session
+	}
+}

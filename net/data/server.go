@@ -119,7 +119,7 @@ func (sm *ServerManager) UpdateServerStatus(uuid int64, status int8) {
 func (sm *ServerManager) GetAlls() []*Server {
 	defer sm.mutex.RLocker().Unlock()
 	sm.mutex.RLocker().Lock()
-	lst := make([]*Server, len(sm.ServerMap))
+	lst := make([]*Server, 0)
 	for _, v := range sm.ServerMap {
 		if v != nil {
 			lst = append(lst, v)

@@ -36,6 +36,8 @@ func (this *GateHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) error 
 
 	conn.SetReadDeadline(time.Now().Add(time.Duration(app.VGate.Config.Gate.ReadOverTime) * time.Second))
 
+	fmt.Printf("  GateHandler :  OnMessage  %#v \n", msg)
+
 	switch msg.Cmd {
 	case data.Heartbeat:
 		//心跳
@@ -74,10 +76,16 @@ func (this *GateHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) error 
 		return nil
 	case data.Notice:
 		//通知消息
+		isHandler := logic.NoticeHelperInstance.Handler(msg)
+		if !isHandler {
+			//其它通知，转发给所有的服务器
+			app.VGate.SubHelper.Broadcast(msg.Topic, msg)
+		}
+		return nil
 	case data.Request:
 		//客户端请求消息，将通过订阅信息管理器转发给订阅了指定主题的服务器
 		app.VGate.SubHelper.Broadcast(msg.Topic, msg)
-
+		return nil
 	case data.Response:
 		//转发回复消息
 		session := app.VGate.SessionManager.GetSession(msg.SessionId)
@@ -86,8 +94,9 @@ func (this *GateHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) error 
 		} else {
 			log.Error("未找到会话ID %d 对应的客户端\n", msg.SessionId)
 		}
+		return nil
 	default:
-		fmt.Printf("未知的消息指令 %v ", msg.Cmd)
+		fmt.Printf("未知的消息指令 %#v ", msg)
 		//fmt.Printf("  GateHandler :  OnMessage  %v \n", msg)
 	}
 
@@ -111,7 +120,7 @@ func (this *GateHandler) OnConnect(conn *websocket.Conn) *data.Session {
 	//通知客户端上线
 	lst := app.VGate.ServerManager.GetAlls()
 	by, _ := json.Marshal(session)
-	noticeMsg := data.BuildNoticeMsg(app.VGate.Config.Gate.SecretKey, logic.Notice_On_Line, string(by))
+	noticeMsg := data.BuildNoticeMsg(app.VGate.Config.Gate.SecretKey, logic.Notice_On_Line, by)
 	for _, server := range lst {
 		if server != nil {
 			server.SendMessage(noticeMsg)
@@ -128,13 +137,18 @@ func (this *GateHandler) OnDisconnect(session *data.Session) {
 	if server != nil {
 
 		logic.SubHelper.ServerClose(server)
+		app.VGate.ServerManager.RemoveServer(session.UUID)
 	} else {
 		//通知客户端下线
 		lst := app.VGate.ServerManager.GetAlls()
+		by, _ := json.Marshal(session)
+		noticeMsg := data.BuildNoticeMsg(app.VGate.Config.Gate.SecretKey, logic.Notice_Off_Line, by)
 		for _, server := range lst {
-			by, _ := json.Marshal(session)
-			noticeMsg := data.BuildNoticeMsg(app.VGate.Config.Gate.SecretKey, logic.Notice_Off_Line, string(by))
-			server.SendMessage(noticeMsg)
+			if server != nil {
+				server.SendMessage(noticeMsg)
+			} else {
+				fmt.Print("break point of debug !")
+			}
 		}
 
 		//logic.Sender.Response(topic string, msg *data.WsMsg)
