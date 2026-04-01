@@ -13,9 +13,7 @@ import (
 type Server struct {
 	UUID   int64 //客户端ID
 	Status int8  //会话状态 0：未连接 1：已连接 2：已断开
-	// Resp   *http.ResponseWriter
-	// Req    *http.Request
-	Conn *websocket.Conn
+	Conn   *websocket.Conn
 }
 
 // 发送消息

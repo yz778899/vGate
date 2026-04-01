@@ -9,17 +9,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// type GateConfig struct {
-// 	WsPort    int    //端口
-// 	WsPath    string //路径
-// 	SecretKey string
-// }
-
-// type LogConfig struct {
-// 	Open bool
-// 	Path string
-// }
-
 type config struct {
 	// GateConfig
 	// LogConfig
@@ -36,13 +25,6 @@ type config struct {
 		Path string `yaml:"path"`
 	} `yaml:"log"`
 }
-
-// // 配置单例
-// var ConfigInstance *config
-
-// func init() {
-// 	ConfigInstance = GetConfig("config/config.yaml")
-// }
 
 func getConfig(path string) *config {
 

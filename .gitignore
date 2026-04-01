@@ -5,12 +5,6 @@
 *.swo
 *~
 
-# .trae 文件夹不提交
-.trae/
-
-# payment_cert 文件夹不提交
-payment_cert/
-
 # 编译输出
 *.exe
 *.exe~
@@ -39,11 +33,7 @@ logs/
 resource/logs/
 resource/logs/*.log
 
-# resource 目录配置 - 只提交 database 文件夹下的内容，public 文件夹本身不提交
-/resource/*
-!/resource/database/
-!/resource/public/
-/resource/public/*
+
 
 # 临时文件
 tmp/
@@ -79,15 +69,4 @@ config/config.yml
 # 调试生成的文件
 __debug_bin.exe*
 
-.vscode/
-# Roo
-.roo/
-/config/config.yml
-/gin-fast-linux
-/resource/public/uploads
-/.qoder
 
-# plugins 目录配置 - 只提交 example 目录和 exampleinit.go
-/plugins/*
-!/plugins/example/
-!/plugins/exampleinit.go

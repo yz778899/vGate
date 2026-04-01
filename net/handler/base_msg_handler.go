@@ -26,31 +26,29 @@ func (this *BaseMsgHandler) GetTopic() string {
 	return this.Topic
 }
 
-// Init 默认实现
+// Init 初始化
 func (this *BaseMsgHandler) Init() error {
 
 	return nil
 }
 
-// BeforeProcess 默认实现
+// BeforeProcess 业务处理前
 func (this *BaseMsgHandler) BeforeProcess() error {
 	// 子类可以重写
 	return nil
 }
 
-// Process 需要子类实现
+// Process 处理业务  需要子类实现
 func (this *BaseMsgHandler) Process() error {
 	return fmt.Errorf("Process method not implemented")
 }
 
-// AfterProcess 默认实现
+// AfterProcess 处理后
 func (this *BaseMsgHandler) AfterProcess() {
-	// 记录处理时间
-	// 注意：需要在消息中存储开始时间，这里简化处理
 
 }
 
-// Release 默认实现
+// Release 释放
 func (this *BaseMsgHandler) Release() error {
 	// 子类可以重写
 	return nil

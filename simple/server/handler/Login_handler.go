@@ -58,9 +58,7 @@ func (this *LoginHandler) Process() error {
 	return nil
 }
 
-// AfterProcess 默认实现
+// AfterProcess 处理后
 func (this *LoginHandler) AfterProcess() {
-	// 记录处理时间
-	// 注意：需要在消息中存储开始时间，这里简化处理
 
 }

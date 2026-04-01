@@ -1,0 +1,14 @@
+
+gate:
+  WsPort: 8080 #端口
+  WsPath: "/"
+  secretKey: "sdklPY#$xks-23ksd%^dfskljkl[@#345]" #安全密钥
+  HeartbeatTime: 5000 #心跳时间（秒)  default = 5
+  ReadOverTime: 15000 #读超时 default = 15
+
+debug: true #debug模式是否开启
+
+
+log: #日志配置
+  open: true
+  path: "/log"
