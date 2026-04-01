@@ -1,6 +1,6 @@
 ## vGate 
 
-一个用go编写的网关组件，通信目前仅支持 websocket 。socket 和 udp 版后续将会加入
+一个用go编写的网关组件，通信目前支持 websocket 。socket 和 udp 版后续将会加入
 
 该项目为游戏分布式、集群而设计，也可用于传统软件的web项目，目前是个人开源项目，没有使用限制。
 
@@ -20,7 +20,7 @@
 
 -  **服务端：**
 
-   1 可向网关 Subscription（订阅） UnSubscription(取消订阅)，订阅的topic ，网关即会将topic相符的消息发布，从而实现服务分布式与集群
+   1 可向网关 Subscription（订阅） UnSubscription(取消订阅) 。 网关会将topic相符的消息发布给服务
 
    2 同一个 topic 有多个服务端 订阅，多个服务端都会收到该 topic所属的消息
 
@@ -29,7 +29,9 @@
    4 断线重连 、离线订阅 待开发
 
 - **客户端**
+
    1 仅向网关发送请求，即可得到服务端的响应。服务端的端口不对外暴露。
+
    2 多个服务器共用一个网关端口，无感切换服务，一次单个连接处理所有业务。
 
    
@@ -51,7 +53,8 @@ cd .\simple\gate\
 go run main.go   # simple\gate\main.go
 cd ..\server\   
 go run main.go  # simple\server\main.go
-```bash
+```
+
 
 **客户端**
 
