@@ -3,7 +3,7 @@ package msg
 import (
 	"encoding/json"
 
-	"github.com/14132465/vGate/net/data"
+	"github.com/yz778899/vGate/net/data"
 )
 
 func Decoder(wsMsg *data.WsMsg, reqMsg any) error {

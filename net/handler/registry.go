@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/14132465/vGate/net/data"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/yz778899/vGate/net/data"
 )
 
 // Registry 处理器注册中心

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/14132465/vGate/net/data"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net/data"
 )
 
 // 消息发送者 - 服务端|客户端

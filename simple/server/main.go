@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/14132465/vGate/net"
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/handler"
-	msg_handler "github.com/14132465/vGate/simple/server/handler"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/handler"
+	msg_handler "github.com/yz778899/vGate/simple/server/handler"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/14132465/vGate/net/data"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net/data"
 )
 
 // WsHandlerInterface 定义了处理WebSocket连接和消息的接口

@@ -1,10 +1,10 @@
 package msg_handler
 
 import (
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/handler"
-	"github.com/14132465/vGate/simple/server/msg"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/handler"
+	"github.com/yz778899/vGate/simple/server/msg"
 )
 
 // 游戏列表处理器

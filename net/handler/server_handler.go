@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/data"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/data"
 )
 
 // ServerHandler 服务端 处理器，负责处理WebSocket连接和消息

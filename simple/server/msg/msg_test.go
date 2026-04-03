@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/14132465/vGate/net/data"
+	"github.com/yz778899/vGate/net/data"
 )
 
 func TestDecoder_LoginRequest(t *testing.T) {

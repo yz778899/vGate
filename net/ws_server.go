@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/data"
-	"github.com/14132465/vGate/net/handler"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/handler"
 
 	ws "github.com/gorilla/websocket"
 )

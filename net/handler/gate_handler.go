@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/data"
-	"github.com/14132465/vGate/net/logic"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/logic"
 )
 
 // GateHandler网关处理器，负责处理WebSocket连接和消息
@@ -103,7 +103,7 @@ func (this *GateHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) error 
 		}
 		return nil
 	default:
-		fmt.Printf("未知的消息指令 %#v ", msg)
+		log.Error("收到未知的消息 %#v ", string(msg.Content))
 		//fmt.Printf("  GateHandler :  OnMessage  %v \n", msg)
 	}
 

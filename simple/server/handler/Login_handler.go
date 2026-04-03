@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/data"
-	"github.com/14132465/vGate/net/handler"
-	"github.com/14132465/vGate/net/logic"
-	"github.com/14132465/vGate/simple/server/msg"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/handler"
+	"github.com/yz778899/vGate/net/logic"
+	"github.com/yz778899/vGate/simple/server/msg"
 )
 
 type LoginHandler struct {

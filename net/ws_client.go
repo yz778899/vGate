@@ -8,11 +8,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/coroutine"
-	"github.com/14132465/vGate/net/data"
-	"github.com/14132465/vGate/net/handler"
 	"github.com/gorilla/websocket"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/coroutine"
+	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/handler"
 )
 
 var uuid atomic.Int64

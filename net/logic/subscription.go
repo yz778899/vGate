@@ -3,7 +3,7 @@ package logic
 import (
 	"sync"
 
-	"github.com/14132465/vGate/net/data"
+	"github.com/yz778899/vGate/net/data"
 )
 
 // SubscriptionInfo结构体表示一个订阅信息，包含订阅的主题和对应的服务器会话信息

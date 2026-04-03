@@ -1,9 +1,9 @@
 package app
 
 import (
-	"github.com/14132465/vGate/net/app/config"
-	"github.com/14132465/vGate/net/data"
-	"github.com/14132465/vGate/net/logic"
+	"github.com/yz778899/vGate/net/app/config"
+	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/logic"
 )
 
 // 入口

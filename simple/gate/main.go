@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/14132465/vGate/net"
-	"github.com/14132465/vGate/net/app"
-	"github.com/14132465/vGate/net/handler"
+	"github.com/yz778899/vGate/net"
+	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/net/handler"
 	"go.uber.org/zap"
 )
 

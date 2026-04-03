@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/14132465/vGate/net/app"
-	_ "github.com/14132465/vGate/net/app"
+	"github.com/yz778899/vGate/net/app"
+	_ "github.com/yz778899/vGate/net/app"
 )
 
 func main() {

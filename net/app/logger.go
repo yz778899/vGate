@@ -3,7 +3,7 @@ package app
 import (
 	"os"
 
-	"github.com/14132465/vGate/net/app/config"
+	"github.com/yz778899/vGate/net/app/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
