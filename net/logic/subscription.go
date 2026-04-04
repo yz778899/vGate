@@ -9,7 +9,7 @@ import (
 // SubscriptionInfo结构体表示一个订阅信息，包含订阅的主题和对应的服务器会话信息
 type SubscriptionInfo struct {
 	Topic  string
-	Server *data.Server
+	Server *data.AppServer
 }
 
 // SubscriptionInfoList []SubscriptionInfo
@@ -27,7 +27,7 @@ func init() {
 }
 
 // 添加订阅信息
-func (this *SubscriptionHelper) AddSubscriptionInfo(topic string, server *data.Server) {
+func (this *SubscriptionHelper) AddSubscriptionInfo(topic string, server *data.AppServer) {
 	this.Lock()
 	defer this.Unlock()
 	sub := SubscriptionInfo{
@@ -45,7 +45,7 @@ func (this *SubscriptionHelper) GetSubscriptionInfo(topic string) []Subscription
 }
 
 // 移除订阅信息
-func (this *SubscriptionHelper) UnSubscriptionInfo(topic string, server *data.Server) {
+func (this *SubscriptionHelper) UnSubscriptionInfo(topic string, server *data.AppServer) {
 	this.Lock()
 	defer this.Unlock()
 	list := this.SubscriptionMap[topic]
@@ -60,7 +60,7 @@ func (this *SubscriptionHelper) UnSubscriptionInfo(topic string, server *data.Se
 }
 
 // 服务器断开，需要清除所有相关的订阅数据
-func (this *SubscriptionHelper) ServerClose(server *data.Server) {
+func (this *SubscriptionHelper) ServerClose(server *data.AppServer) {
 	this.Lock()
 	defer this.Unlock()
 
@@ -78,7 +78,7 @@ func (this *SubscriptionHelper) ServerClose(server *data.Server) {
 }
 
 // 广播消息给订阅了指定主题的所有服务器
-func (this *SubscriptionHelper) Broadcast(topic string, msg *data.WsMsg) {
+func (this *SubscriptionHelper) Broadcast(topic string, msg *data.WebsocketMsg) {
 	subs := this.GetSubscriptionInfo(topic)
 	for _, sub := range subs {
 		sub.Server.SendMessage(msg)

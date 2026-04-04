@@ -18,7 +18,7 @@ type Session struct {
 }
 
 // 发送消息
-func (this *Session) SendMessage(msg *WsMsg) {
+func (this *Session) SendMessage(msg *WebsocketMsg) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error(" panic: %v\n", err)

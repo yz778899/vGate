@@ -6,7 +6,7 @@ import (
 	"github.com/yz778899/vGate/net/data"
 )
 
-func Decoder(wsMsg *data.WsMsg, reqMsg any) error {
+func Decoder(wsMsg *data.WebsocketMsg, reqMsg any) error {
 	err := json.Unmarshal(wsMsg.Content, reqMsg)
 	return err
 }

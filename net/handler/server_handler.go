@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
-	"github.com/yz778899/vGate/net/app"
 	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/env"
 )
 
 // ServerHandler 服务端 处理器，负责处理WebSocket连接和消息
@@ -16,13 +16,16 @@ type ServerHandler struct {
 }
 
 // 收到消息
-func (this *ServerHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) error {
+func (this *ServerHandler) OnMessage(ctx WebSocketContext) error {
 
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error(fmt.Printf("处理消息时发生错误: %v\n", err))
 		}
 	}()
+
+	//conn := ctx.Session.Conn
+	msg := ctx.WsMsg
 
 	switch msg.Cmd {
 	// case data.Publish:
@@ -55,8 +58,8 @@ func (this *ServerHandler) OnMessage(conn *websocket.Conn, msg *data.WsMsg) erro
 	}
 
 	custom := data.CustomMessage{
-		WsMsg:      *msg,
-		HideFields: []string{"content", "secretKey"}, // 隐藏敏感字段
+		WebsocketMsg: *msg,
+		HideFields:   []string{"content", "secretKey"}, // 隐藏敏感字段
 	}
 	jsonData, _ := json.Marshal(custom)
 	//jsonData, _ := json.MarshalIndent(custom, "", "  ")
@@ -72,7 +75,7 @@ func (this *ServerHandler) OnError(conn *websocket.Conn, err error) {
 // 连接建立
 func (this *ServerHandler) OnConnect(conn *websocket.Conn) *data.Session {
 	// 将新连接添加到会话管理器
-	session := app.VGate.SessionManager.AddSession(&data.Session{
+	session := env.VGate.SessionMgr.AddSession(&data.Session{
 		UUID:   -1,
 		Status: 1,
 		Conn:   conn,

@@ -2,9 +2,9 @@ package msg_handler
 
 import (
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/cmd/app/msg"
 	"github.com/yz778899/vGate/net/handler"
-	"github.com/yz778899/vGate/simple/server/msg"
+	"github.com/yz778899/vGate/net/logic"
 )
 
 // 游戏列表处理器
@@ -24,7 +24,7 @@ func (this *GameListHandler) BeforeProcess() error {
 // 处理
 func (this *GameListHandler) Process() error {
 	resp := &msg.GameListResponse{Games: []msg.Game{}}
-	app.Sender.Resp(this.Msg.SessionId, this.Msg.GetTopic(), resp)
+	logic.Sender.Resp(this.Msg.SessionId, this.Msg.GetTopic(), resp)
 	return nil
 }
 

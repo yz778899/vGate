@@ -10,11 +10,11 @@ import (
 type BaseMsgHandler struct {
 	Topic   string
 	Session *data.Session
-	Msg     *data.WsMsg
+	Msg     *data.WebsocketMsg
 }
 
 // NewBaseMsgHandler 创建基础处理器
-func NewBaseMsgHandler(topic string, session *data.Session, msg *data.WsMsg) MsgHandlerInterface {
+func NewBaseMsgHandler(topic string, session *data.Session, msg *data.WebsocketMsg) MsgHandlerInterface {
 	return &BaseMsgHandler{
 		Session: session,
 		Msg:     msg,

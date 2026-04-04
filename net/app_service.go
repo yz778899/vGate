@@ -9,44 +9,44 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/yz778899/vGate/net/app"
 	"github.com/yz778899/vGate/net/coroutine"
 	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/env"
+
 	"github.com/yz778899/vGate/net/handler"
 )
 
 var uuid atomic.Int64
 
-type WsClient struct {
+type AppService struct {
 	*data.Session
-	Path        string
-	pool        *coroutine.CoroutineGroup
-	handler     handler.WsHandlerInterface
-	isConnected bool
-	//Conn    *websocket.Conn
+	Path          string
+	pool          *coroutine.CoroutineGroup
+	handler       handler.ServiceAcceptInterface
+	isConnected   bool
 	maxRetries    int           //最大重连次数
 	retryInterval time.Duration //重连时间间隔
 }
 
-func NewWsWsClient() *WsClient {
-	return &WsClient{}
+func NewWsWsClient() *AppService {
+	return &AppService{}
 }
 
 // 配置消息处理器
-func (this *WsClient) Handler(handler handler.WsHandlerInterface) *WsClient {
+func (this *AppService) Handler(handler handler.ServiceAcceptInterface) *AppService {
 	this.handler = handler
 	return this
 }
 
 // 配置 WsServer 的端口和路径
-func (this *WsClient) Config(Path string) *WsClient {
+func (this *AppService) Config(Path string) *AppService {
 	this.Path = Path
 	return this
 }
 
 // 常规客户端 重连间隔1秒 连续偿试30分钟
-func NewWsClient() *WsClient {
-	WsClient := WsClient{}
+func NewWsClient() *AppService {
+	WsClient := AppService{}
 	WsClient.pool = coroutine.NewCoroutineGroup(1, "WsClient_msg_group", 4)
 	WsClient.maxRetries = 1000 * 60 * 30                                                   //30分钟  毫秒数
 	WsClient.retryInterval = time.Millisecond * 1000                                       //1秒
@@ -55,8 +55,8 @@ func NewWsClient() *WsClient {
 }
 
 // socket客户端， 重连间隔100毫秒 连续偿试24小时
-func NewWsClientAlwaysOnlie() *WsClient {
-	WsClient := WsClient{}
+func NewAppService() *AppService {
+	WsClient := AppService{}
 	WsClient.pool = coroutine.NewCoroutineGroup(1, "WsClient_msg_group", 4)
 	WsClient.maxRetries = 1000 * 60 * 60 * 24 //24小时 毫秒数
 	WsClient.retryInterval = time.Millisecond * 1
@@ -65,7 +65,7 @@ func NewWsClientAlwaysOnlie() *WsClient {
 }
 
 // 连接成功
-func (this *WsClient) Connect(onConnectedCallBack func(conn *websocket.Conn)) (*websocket.Conn, error) {
+func (this *AppService) Connect(onConnectedCallBack func(conn *websocket.Conn)) (*websocket.Conn, error) {
 
 	var conn *websocket.Conn
 	var err error
@@ -80,13 +80,12 @@ func (this *WsClient) Connect(onConnectedCallBack func(conn *websocket.Conn)) (*
 	for i := 0; i < this.maxRetries; i++ {
 
 		if i%logOutNum == 0 {
-
-			app.Log.Info(fmt.Sprintf("尝试连接 (第 %d/%d 次)...", i+1, this.maxRetries))
+			env.Log.Info(fmt.Sprintf("尝试连接 (第 %d/%d 次)...", i+1, this.maxRetries))
 		}
 
 		conn, _, err = websocket.DefaultDialer.Dial(this.Path, nil)
 		if err == nil {
-			app.Log.Info("连接成功！")
+			env.Log.Info("连接成功！")
 
 			//连接成功
 			session := this.handler.OnConnect(conn)
@@ -107,11 +106,11 @@ func (this *WsClient) Connect(onConnectedCallBack func(conn *websocket.Conn)) (*
 		// 检查是否是连接拒绝错误
 		if isConnectionRefused(err) {
 			if i%logOutNum == 0 {
-				app.Log.Info(fmt.Sprintf("连接被拒绝，服务可能未启动，%v 后重试...", this.retryInterval))
+				env.Log.Info(fmt.Sprintf("连接被拒绝，服务可能未启动，%v 后重试...", this.retryInterval))
 			}
 		} else {
 			if i%logOutNum == 0 {
-				app.Log.Info(fmt.Sprintf("连接失败: %v，  %v 后重试...", err, this.retryInterval))
+				env.Log.Info(fmt.Sprintf("连接失败: %v，  %v 后重试...", err, this.retryInterval))
 			}
 		}
 
@@ -147,12 +146,14 @@ func isConnectionRefused(err error) bool {
 }
 
 // 循环读取消息
-func (this *WsClient) readMsg() error {
+func (this *AppService) readMsg() error {
 
 	conn := this.Session.Conn
+	session := this.handler.OnConnect(conn)
+
 	// 接收消息
 	for {
-		_, jsonMsg, err := conn.ReadMessage()
+		_, originalMsgByteArray, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("接收失败:", err)
 			conn.Close()
@@ -163,7 +164,7 @@ func (this *WsClient) readMsg() error {
 
 		theMsg := data.NoDecoderMsg{
 			SessionId: uuid.Add(1),
-			Msg:       string(jsonMsg),
+			Msg:       string(originalMsgByteArray),
 			SnId:      rand.Intn(len(this.pool.Slave)), //够slave取模就可以了
 		}
 
@@ -171,29 +172,34 @@ func (this *WsClient) readMsg() error {
 
 		var v data.NoDecoderMsg = theMsg
 		WsMsg, _ := data.ServerDecoder(v)
-		this.handler.OnMessage(conn, WsMsg)
+
+		this.handler.OnMessage(handler.WebSocketContext{
+			Session:  session,
+			Original: &originalMsgByteArray,
+			WsMsg:    WsMsg,
+		})
 	}
 }
 
 // 设置心跳
-func (this *WsClient) setupHeartbeat() {
+func (this *AppService) setupHeartbeat() {
 	// 启动心跳发送 goroutine
 	go this.sendHeartbeat()
 }
 
 // sendHeartbeat 定期发送 Ping
-func (this *WsClient) sendHeartbeat() {
-	ticker := time.NewTicker(time.Duration(app.VGate.Config.Gate.HeartbeatTime) * time.Second)
+func (this *AppService) sendHeartbeat() {
+	ticker := time.NewTicker(time.Duration(env.VGate.Config.Gate.HeartbeatTime) * time.Second)
 	defer ticker.Stop()
 
 	for {
 		<-ticker.C // 阻塞等待 ticker 信号
 		if err := this.Session.Conn.WriteJSON(data.HeartbeatMsg()); err != nil {
-			app.Log.Info(fmt.Sprintf("发送 heartbeatMsg 失败: %v", err))
+			env.Log.Info(fmt.Sprintf("发送 heartbeatMsg 失败: %v", err))
 			return
 		}
 		// 设置读取超时
-		this.Conn.SetReadDeadline(time.Now().Add(time.Duration(app.VGate.Config.Gate.ReadOverTime) * time.Second))
-		app.Log.Info("发送 heartbeatMsg")
+		this.Conn.SetReadDeadline(time.Now().Add(time.Duration(env.VGate.Config.Gate.ReadOverTime) * time.Second))
+		env.Log.Info("发送 heartbeatMsg")
 	}
 }

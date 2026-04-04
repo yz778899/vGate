@@ -1,9 +1,9 @@
-package app
+package env
 
 import (
 	"os"
 
-	"github.com/yz778899/vGate/net/app/config"
+	"github.com/yz778899/vGate/net/env/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -53,11 +53,12 @@ func InitLogger(cfg *config.RootConfig) error {
 	// 4. 构建输出目标
 	var writers []zapcore.WriteSyncer
 	for _, path := range cfg.Logger.OutputPaths {
-		if path == "stdout" {
+		switch path {
+		case "stdout":
 			writers = append(writers, zapcore.AddSync(os.Stdout))
-		} else if path == "stderr" {
+		case "stderr":
 			writers = append(writers, zapcore.AddSync(os.Stderr))
-		} else {
+		default:
 			// 文件输出，使用 lumberjack 切割
 			writers = append(writers, zapcore.AddSync(&lumberjack.Logger{
 				Filename:   path,

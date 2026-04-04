@@ -12,36 +12,36 @@
 ```go
 
 func main() {
+	defer env.Log.Sync()
+
 	handler := handler.GateHandler{}
 	err := net.NewWsServer().Config(8080, "/").Handler(&handler).Run()
 	if err != nil {
-		app.Log.Fatal("Server failed to start: ", zap.Error(err))
+		env.Log.Fatal("Server failed to start: ", zap.Error(err))
 	}
 }
 ```
 ### 服务端示例
 ```go
 
+
 func main() {
 	//注册消息管理者
 	iniRegistry()
 	//创建服务端
-	server := net.NewWsClientAlwaysOnlie().Config("ws://localhost:8080/")
+	app := net.NewAppService().Config("ws://localhost:8080/")
 	//业务处理器
-	server.Handler(&handler.ServerHandler{})
-	//通信密钥
-	var secretKey string = app.VGate.Config.Gate.SecretKey
+	app.Handler(&handler.ServerHandler{})
 	//请求连接
-	server.Connect(func(conn *websocket.Conn) {
+	app.Connect(func(conn *websocket.Conn) {
 		//绑定连接，向网关订阅 登录注册等 topic
-		app.Sender.BindConn(conn) // 帐号服务器 绑定连接
-		app.Sender.Config(true, "Server of account", secretKey)
+		logic.Sender.BindConn(conn) // 帐号服务器 绑定连接
+		logic.Sender.Config(true, "Server of account")
 		//阅以下的主题消息
-		app.Sender.Subscription(User_Login) //订阅用户登录命令
-		app.Sender.Subscription(User_Register)
-		app.Sender.Subscription(Hall_Game_List) //订阅游戏列表
+		logic.Sender.Subscription(User_Login) //订阅用户登录命令
 	})
 }
+
 // 注册处理器
 func iniRegistry() {
 	registry := handler.NewRegistry()

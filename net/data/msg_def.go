@@ -101,7 +101,7 @@ type RequestMsg = struct {
 type ResponseMsg = RequestMsg
 
 // 兼容所有种类的消息
-type WsMsg struct {
+type WebsocketMsg struct {
 	BaseMsg
 	ServerName string          `json:"serverName"` //服务器名称
 	SessionId  int64           `json:"sessionId"`  //发布消息的客户端ID
@@ -111,7 +111,7 @@ type WsMsg struct {
 
 // CustomMessage 自定义序列化
 type CustomMessage struct {
-	WsMsg
+	WebsocketMsg
 	HideFields []string `json:"-"` // 要隐藏的字段
 }
 
@@ -121,8 +121,8 @@ func (c CustomMessage) MarshalJSON() ([]byte, error) {
 	result := make(map[string]interface{})
 
 	// 使用反射获取Message结构体的值
-	msgValue := reflect.ValueOf(c.WsMsg)
-	msgType := reflect.TypeOf(c.WsMsg)
+	msgValue := reflect.ValueOf(c.WebsocketMsg)
+	msgType := reflect.TypeOf(c.WebsocketMsg)
 
 	// 遍历Message的所有字段
 	for i := 0; i < msgValue.NumField(); i++ {

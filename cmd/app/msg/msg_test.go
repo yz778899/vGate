@@ -10,7 +10,7 @@ import (
 
 func TestDecoder_LoginRequest(t *testing.T) {
 	// WsMsg declares its own Content field, which shadows BaseMsg.Content for ws.Content.
-	ws := &data.WsMsg{
+	ws := &data.WebsocketMsg{
 		BaseMsg: data.BaseMsg{
 			Cmd:   data.Request,
 			Topic: "login",
@@ -27,7 +27,7 @@ func TestDecoder_LoginRequest(t *testing.T) {
 }
 
 func TestDecoder_LoginRequest_InvalidJSON(t *testing.T) {
-	ws := &data.WsMsg{
+	ws := &data.WebsocketMsg{
 		BaseMsg: data.BaseMsg{
 			Content: json.RawMessage(`{`),
 		},

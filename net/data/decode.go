@@ -16,13 +16,13 @@ func (this NoDecoderMsg) MsgSnId() int {
 }
 
 // 服务端  解码消息，将 NoDecoderMsg 转换为 WsMsg
-func ServerDecoder(ndMsg NoDecoderMsg) (*WsMsg, error) {
-	var msg WsMsg
+func ServerDecoder(ndMsg NoDecoderMsg) (*WebsocketMsg, error) {
+	var msg WebsocketMsg
 
 	// 解析 JSON
 	if err := json.Unmarshal([]byte(ndMsg.Msg), &msg); err != nil {
 		// 解析失败时，返回未知命令的消息
-		msg = WsMsg{
+		msg = WebsocketMsg{
 			BaseMsg: BaseMsg{
 				Cmd:   Unknown,
 				Topic: "",
@@ -36,13 +36,13 @@ func ServerDecoder(ndMsg NoDecoderMsg) (*WsMsg, error) {
 }
 
 // 网关 Decoder 解码消息，将 NoDecoderMsg 转换为 WsMsg
-func GateDecoder(ndMsg NoDecoderMsg) (*WsMsg, error) {
-	var msg WsMsg
+func GateDecoder(ndMsg NoDecoderMsg) (*WebsocketMsg, error) {
+	var msg WebsocketMsg
 
 	// 解析 JSON
 	if err := json.Unmarshal([]byte(ndMsg.Msg), &msg); err != nil {
 		// 解析失败时，返回未知命令的消息
-		msg = WsMsg{
+		msg = WebsocketMsg{
 			BaseMsg: BaseMsg{
 				Cmd:   Unknown,
 				Topic: "",

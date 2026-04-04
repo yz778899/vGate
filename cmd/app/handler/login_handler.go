@@ -5,11 +5,10 @@ import (
 	"math/rand"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/net/app"
+	"github.com/yz778899/vGate/cmd/app/msg"
 	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/handler"
 	"github.com/yz778899/vGate/net/logic"
-	"github.com/yz778899/vGate/simple/server/msg"
 )
 
 type LoginHandler struct {
@@ -17,7 +16,7 @@ type LoginHandler struct {
 	Request *msg.LoginRequest
 }
 
-func NewLoginHandler(topic string, session *data.Session, msg *data.WsMsg) handler.MsgHandlerInterface {
+func NewLoginHandler(topic string, session *data.Session, msg *data.WebsocketMsg) handler.MsgHandlerInterface {
 	hdl := LoginHandler{}
 	hdl.Topic = topic
 	hdl.Msg = msg
@@ -47,13 +46,13 @@ func (this *LoginHandler) Process() error {
 	//用户session ID变更 消息结构体
 	changeMsg := logic.SessionIdChange{SessionId: sid,
 		NewId: newId}
-	app.Sender.Notice(logic.Session_Id_Change, changeMsg)
+	logic.Sender.Notice(logic.Session_Id_Change, changeMsg)
 
 	// this.Session.SendMessage(logic.Session_Id_Change, changeMsg)
 
 	resp := &msg.LoginResponse{Info: info}
 
-	app.Sender.Resp(newId, this.Msg.GetTopic(), resp)
+	logic.Sender.Resp(newId, this.Msg.GetTopic(), resp)
 
 	return nil
 }

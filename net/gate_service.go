@@ -8,43 +8,43 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yz778899/vGate/net/app"
 	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/env"
 	"github.com/yz778899/vGate/net/handler"
 
 	ws "github.com/gorilla/websocket"
 )
 
-// WsServer结构体表示一个WebSocket服务器，包含端口、路径、协程池和消息处理器等信息
-type WsServer struct {
+// GateServer结构体表示一个WebSocket服务器，包含端口、路径、协程池和消息处理器等信息
+type GateServer struct {
 	Port    string
 	Path    string
-	handler handler.WsHandlerInterface
+	handler handler.ServiceAcceptInterface
 }
 
 // 配置 WsServer 的端口和路径
-func (this *WsServer) Config(Port int, Path string) *WsServer {
+func (this *GateServer) Config(Port int, Path string) *GateServer {
 	this.Port = strconv.Itoa(Port)
 	this.Path = Path
 	return this
 }
 
 // 创建 WsServer 实例
-func NewWsServer() *WsServer {
-	ws := WsServer{}
+func NewWsServer() *GateServer {
+	ws := GateServer{}
 	return &ws
 }
 
 // 配置消息处理器
-func (this *WsServer) Handler(handler handler.WsHandlerInterface) *WsServer {
+func (this *GateServer) Handler(handler handler.ServiceAcceptInterface) *GateServer {
 	this.handler = handler
 	return this
 }
 
 // 运行 WsServer，监听指定端口并处理 WebSocket 连接和消息
-func (this *WsServer) Run() error {
+func (this *GateServer) Run() error {
 	http.HandleFunc(this.Path, this.wsServerHandler)
-	app.Log.Info("WsServer run , port : " + this.Port)
+	env.Log.Info("WsServer run , port : " + this.Port)
 	return http.ListenAndServe(":"+this.Port, nil)
 }
 
@@ -59,23 +59,23 @@ var upgrader = ws.Upgrader{
 }
 
 // 处理 WebSocket 连接和消息
-func (this *WsServer) wsServerHandler(w http.ResponseWriter, r *http.Request) {
+func (this *GateServer) wsServerHandler(w http.ResponseWriter, r *http.Request) {
 	// 升级 HTTP 连接为 WsServer
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		app.Log.Info(fmt.Sprintf("升级失败:", err))
+		env.Log.Info(fmt.Sprintf("升级失败: %v", err))
 		return
 	}
 	defer conn.Close()
 
 	//读超时 10秒
-	conn.SetReadDeadline(time.Now().Add(time.Duration(app.VGate.Config.Gate.ReadOverTime) * time.Second))
+	conn.SetReadDeadline(time.Now().Add(time.Duration(env.VGate.Config.Gate.ReadOverTime) * time.Second))
 
 	session := this.handler.OnConnect(conn)
 
 	for {
 		// 读取客户端消息
-		_, msg, err := conn.ReadMessage()
+		_, originalMsgByteArray, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("关闭通道:", err)
 			this.handler.OnDisconnect(session)
@@ -88,38 +88,19 @@ func (this *WsServer) wsServerHandler(w http.ResponseWriter, r *http.Request) {
 
 		theMsg = data.NoDecoderMsg{
 			SessionId: session.UUID,
-			Msg:       string(msg),
+			Msg:       string(originalMsgByteArray),
 			SnId:      rand.Intn(1024),
 		}
 
 		WsMsg, _ := data.GateDecoder(theMsg)
 
 		//fmt.Printf("data.GateDecoder 处理后的消息 msg = %#v \n", WsMsg)
-
-		this.handler.OnMessage(conn, WsMsg)
+		this.handler.OnMessage(handler.WebSocketContext{
+			Session:  session,
+			Original: &originalMsgByteArray,
+			WsMsg:    WsMsg,
+		})
 
 	}
 	this.handler.OnDisconnect(session)
 }
-
-// // sendHeartbeat 定期发送 Ping
-// func (c *WsServer) sendHeartbeat(session *data.Session) {
-// 	ticker := time.NewTicker(5 * time.Second)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		select {
-// 		case <-ticker.C:
-// 			// 发送 Ping 消息
-// 			if err := session.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-// 				log.Printf("发送 Ping 失败: %v", err)
-// 				return
-// 			}
-// 			log.Println("发送 Ping")
-
-// 		case <-c.send:
-// 			// 有其他消息发送，继续
-// 			continue
-// 		}
-// 	}
-// }

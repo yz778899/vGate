@@ -1,4 +1,4 @@
-package app
+package logic
 
 import (
 	"encoding/json"
@@ -9,10 +9,13 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
 	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/env"
+	"github.com/yz778899/vGate/net/env/config"
 )
 
 // 消息发送者 - 服务端|客户端
 type sender struct {
+	Conf       *config.RootConfig
 	Conn       *websocket.Conn
 	serverName string
 	isServer   bool   //是否为服务端
@@ -39,11 +42,12 @@ func (this *sender) BindConn(connInstance *websocket.Conn) *sender {
 
 // 绑定
 // secretKey 安全密钥
-func (this *sender) Config(isServer bool, serverName string, secretKey string) *sender {
+func (this *sender) Config(isServer bool, serverName string) *sender {
 	this.isServer = isServer
 	this.serverName = serverName
-	this.SecretKey = secretKey
+	this.Conf = env.VGate.Config
 	return this
+	//config env.VGate.Config
 }
 
 //secretKey
@@ -101,7 +105,7 @@ func (this *sender) sendMsg(userId int64, cmd string, topic string, msg any) err
 		var sendMsg any
 		switch cmd {
 		case data.Notice:
-			sendMsg = data.BuildNoticeMsg(VGate.Config.Gate.SecretKey, topic, content)
+			sendMsg = data.BuildNoticeMsg(this.Conf.Gate.SecretKey, topic, content)
 		case data.Request:
 			sendMsg = data.BuildRequestMsg(userId, topic, content)
 		case data.Response:

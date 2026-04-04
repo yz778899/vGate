@@ -35,7 +35,7 @@ func init() {
 	}
 }
 
-func (this *NoticeHelper) Handler(msg *data.WsMsg) bool {
+func (this *NoticeHelper) Handler(msg *data.WebsocketMsg) bool {
 
 	if msg.Topic == Session_Id_Change {
 		change := SessionIdChange{}
