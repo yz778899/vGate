@@ -1,9 +1,9 @@
-package msg
+package appmsg
 
 import (
 	"encoding/json"
 
-	"github.com/yz778899/vGate/net/data"
+	data "github.com/yz778899/vGate/net/msg"
 )
 
 func Decoder(wsMsg *data.WebsocketMsg, reqMsg any) error {

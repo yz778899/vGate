@@ -2,7 +2,7 @@ package msg_handler
 
 import (
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/cmd/app/msg"
+	appmsg "github.com/yz778899/vGate/cmd/app/app_msg"
 	"github.com/yz778899/vGate/net/handler"
 	"github.com/yz778899/vGate/net/logic"
 )
@@ -10,20 +10,20 @@ import (
 // 游戏列表处理器
 type GameListHandler struct {
 	handler.BaseMsgHandler
-	Request *msg.GameListRequest
+	Request *appmsg.GameListRequest
 }
 
 // 处理前
 func (this *GameListHandler) BeforeProcess() error {
 	//解码得到请求消息体
-	this.Request = &msg.GameListRequest{}
-	err := msg.Decoder(this.Msg, this.Request)
+	this.Request = &appmsg.GameListRequest{}
+	err := appmsg.Decoder(this.Msg, this.Request)
 	return err
 }
 
 // 处理
 func (this *GameListHandler) Process() error {
-	resp := &msg.GameListResponse{Games: []msg.Game{}}
+	resp := &appmsg.GameListResponse{Games: []appmsg.Game{}}
 	logic.Sender.Resp(this.Msg.SessionId, this.Msg.GetTopic(), resp)
 	return nil
 }

@@ -3,18 +3,18 @@ package handler
 import (
 	"fmt"
 
-	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/msg"
 )
 
 // BaseMsgHandler 基础处理器实现
 type BaseMsgHandler struct {
 	Topic   string
-	Session *data.Session
-	Msg     *data.WebsocketMsg
+	Session *msg.Session
+	Msg     *msg.WebsocketMsg
 }
 
 // NewBaseMsgHandler 创建基础处理器
-func NewBaseMsgHandler(topic string, session *data.Session, msg *data.WebsocketMsg) MsgHandlerInterface {
+func NewBaseMsgHandler(topic string, session *msg.Session, msg *msg.WebsocketMsg) MsgHandlerInterface {
 	return &BaseMsgHandler{
 		Session: session,
 		Msg:     msg,

@@ -1,4 +1,4 @@
-package msg
+package appmsg
 
 import "time"
 

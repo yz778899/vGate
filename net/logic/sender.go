@@ -8,9 +8,9 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
-	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/env"
 	"github.com/yz778899/vGate/net/env/config"
+	data "github.com/yz778899/vGate/net/msg"
 )
 
 // 消息发送者 - 服务端|客户端

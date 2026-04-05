@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/net/data"
+	"github.com/yz778899/vGate/net/msg"
 )
 
 // Registry 处理器注册中心
@@ -76,7 +76,7 @@ func (r *Registry) ListTopics() []string {
 }
 
 // 创建一个处理器，并控制它的生周期运行
-func (r *Registry) RunHandler(msg *data.WebsocketMsg, session *data.Session) error {
+func (r *Registry) RunHandler(msg *msg.WebsocketMsg, session *msg.Session) error {
 
 	defer func() {
 		if err := recover(); err != nil {

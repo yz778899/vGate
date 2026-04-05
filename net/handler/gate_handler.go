@@ -7,9 +7,9 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
-	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/env"
 	"github.com/yz778899/vGate/net/logic"
+	data "github.com/yz778899/vGate/net/msg"
 )
 
 // GateHandler网关处理器，负责处理WebSocket连接和消息

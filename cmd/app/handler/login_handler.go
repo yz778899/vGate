@@ -5,18 +5,18 @@ import (
 	"math/rand"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/cmd/app/msg"
-	"github.com/yz778899/vGate/net/data"
+	appmsg "github.com/yz778899/vGate/cmd/app/app_msg"
 	"github.com/yz778899/vGate/net/handler"
 	"github.com/yz778899/vGate/net/logic"
+	"github.com/yz778899/vGate/net/msg"
 )
 
 type LoginHandler struct {
 	handler.BaseMsgHandler
-	Request *msg.LoginRequest
+	Request *appmsg.LoginRequest
 }
 
-func NewLoginHandler(topic string, session *data.Session, msg *data.WebsocketMsg) handler.MsgHandlerInterface {
+func NewLoginHandler(topic string, session *msg.Session, msg *msg.WebsocketMsg) handler.MsgHandlerInterface {
 	hdl := LoginHandler{}
 	hdl.Topic = topic
 	hdl.Msg = msg
@@ -28,8 +28,8 @@ func NewLoginHandler(topic string, session *data.Session, msg *data.WebsocketMsg
 // PreProcess处理前
 func (this *LoginHandler) BeforeProcess() error {
 	//解码得到请求消息体
-	this.Request = &msg.LoginRequest{}
-	err := msg.Decoder(this.Msg, this.Request)
+	this.Request = &appmsg.LoginRequest{}
+	err := appmsg.Decoder(this.Msg, this.Request)
 	return err
 }
 
@@ -49,7 +49,7 @@ func (this *LoginHandler) Process() error {
 
 	// this.Session.SendMessage(logic.Session_Id_Change, changeMsg)
 
-	resp := &msg.LoginResponse{Info: info}
+	resp := &appmsg.LoginResponse{Info: info}
 
 	logic.Sender.Resp(newId, this.Msg.GetTopic(), resp)
 

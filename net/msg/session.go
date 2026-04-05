@@ -1,4 +1,4 @@
-package data
+package msg
 
 import (
 	"runtime/debug"

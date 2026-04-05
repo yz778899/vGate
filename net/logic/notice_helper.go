@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/yz778899/vGate/net/data"
+	data "github.com/yz778899/vGate/net/msg"
 )
 
 const (

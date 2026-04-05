@@ -1,8 +1,8 @@
 package env
 
 import (
-	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/env/config"
+	data "github.com/yz778899/vGate/net/msg"
 )
 
 // 入口

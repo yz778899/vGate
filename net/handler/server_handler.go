@@ -6,13 +6,13 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
-	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/env"
+	"github.com/yz778899/vGate/net/msg"
 )
 
 // ServerHandler 服务端 处理器，负责处理WebSocket连接和消息
 type ServerHandler struct {
-	Session *data.Session
+	Session *msg.Session
 }
 
 // 收到消息
@@ -25,26 +25,26 @@ func (this *ServerHandler) OnMessage(ctx WebSocketContext) error {
 	}()
 
 	//conn := ctx.Session.Conn
-	msg := ctx.WsMsg
+	wsMsg := ctx.WsMsg
 
-	switch msg.Cmd {
+	switch wsMsg.Cmd {
 	// case data.Publish:
 	// 	//发布消息
-	case data.Heartbeat:
+	case msg.Heartbeat:
 		//心跳忽略
 		return nil
-	case data.Notice:
-		log.Info(fmt.Printf("### ServerHandler  cmd = Notice, Topic = %v 通知消息，没有订阅，也会收到的类型 \n", msg.Topic))
-	case data.Request:
+	case msg.Notice:
+		log.Info(fmt.Printf("### ServerHandler  cmd = Notice, Topic = %v 通知消息，没有订阅，也会收到的类型 \n", wsMsg.Topic))
+	case msg.Request:
 		//客户端请求消息
-		by, err := msg.Data.MarshalJSON()
+		by, err := wsMsg.Data.MarshalJSON()
 		if err != nil {
 			return err
 		} else {
 
-			log.Info(fmt.Printf(" recv  topic = %v msg = %v \n", msg.Topic, string(by)))
+			log.Info(fmt.Printf(" recv  topic = %v msg = %v \n", wsMsg.Topic, string(by)))
 
-			RegistryInstance.RunHandler(msg, this.Session)
+			RegistryInstance.RunHandler(wsMsg, this.Session)
 
 			// creator, ok := RegistryInstance.GetMsgHandlerCreate(msg.Topic)
 			// if ok {
@@ -54,11 +54,11 @@ func (this *ServerHandler) OnMessage(ctx WebSocketContext) error {
 			// }
 		}
 	default:
-		log.Error(fmt.Sprintf("未知的消息指令 %#v \n ", msg))
+		log.Error(fmt.Sprintf("未知的消息指令 %#v \n ", wsMsg))
 	}
 
-	custom := data.CustomMessage{
-		WebsocketMsg: *msg,
+	custom := msg.CustomMessage{
+		WebsocketMsg: *wsMsg,
 		HideFields:   []string{"data", "secretKey"}, // 隐藏敏感字段
 	}
 	jsonData, _ := json.Marshal(custom)
@@ -73,9 +73,9 @@ func (this *ServerHandler) OnError(conn *websocket.Conn, err error) {
 }
 
 // 连接建立
-func (this *ServerHandler) OnConnect(conn *websocket.Conn) *data.Session {
+func (this *ServerHandler) OnConnect(conn *websocket.Conn) *msg.Session {
 	// 将新连接添加到会话管理器
-	session := env.VGate.SessionMgr.AddSession(&data.Session{
+	session := env.VGate.SessionMgr.AddSession(&msg.Session{
 		UUID:   -1,
 		Status: 1,
 		Conn:   conn,
@@ -90,6 +90,6 @@ func (this *ServerHandler) OnConnect(conn *websocket.Conn) *data.Session {
 }
 
 // 连接断开
-func (this *ServerHandler) OnDisconnect(session *data.Session) {
+func (this *ServerHandler) OnDisconnect(session *msg.Session) {
 	log.Error(fmt.Sprintf("  serverHandler :  OnDisconnect session = %#v ", session))
 }

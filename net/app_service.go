@@ -10,8 +10,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/yz778899/vGate/net/coroutine"
-	"github.com/yz778899/vGate/net/data"
 	"github.com/yz778899/vGate/net/env"
+	data "github.com/yz778899/vGate/net/msg"
 
 	"github.com/yz778899/vGate/net/handler"
 )
