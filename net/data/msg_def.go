@@ -40,6 +40,18 @@ type BaseMsg struct {
 
 }
 
+// 最终发给客户端的消息
+type ToClientMsg struct {
+	Topic string          `json:"topic"` //订阅主题
+	Data  json.RawMessage `json:"data"`  // 保留原始 JSON
+}
+
+func (this *ToClientMsg) TransitionOf(msg *WebsocketMsg) *ToClientMsg {
+	this.Topic = msg.Topic
+	this.Data = msg.Data
+	return this
+}
+
 func (this *BaseMsg) GetCmd() string {
 	return this.Cmd
 }

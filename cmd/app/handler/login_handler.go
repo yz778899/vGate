@@ -41,7 +41,6 @@ func (this *LoginHandler) Process() error {
 
 	log.Info("摸拟登录中……")
 	info := fmt.Sprintf("登录成功! 你的用户名 %v  密码 %v, 原sessionId = %v  新id = %v  !  向网关 发送请求变更  ！", this.Request.User, this.Request.Pass, sid, newId)
-	log.Info(info)
 
 	//用户session ID变更 消息结构体
 	changeMsg := logic.SessionIdChange{SessionId: sid,
@@ -54,6 +53,7 @@ func (this *LoginHandler) Process() error {
 
 	logic.Sender.Resp(newId, this.Msg.GetTopic(), resp)
 
+	log.Info(info)
 	return nil
 }
 

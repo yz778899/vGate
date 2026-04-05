@@ -99,7 +99,10 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 		//转发回复消息
 		session := env.VGate.SessionMgr.GetSession(msg.SessionId)
 		if session != nil {
-			session.SendMessage(msg)
+
+			toClient := data.ToClientMsg{}
+
+			session.SendToClient(toClient.TransitionOf(msg))
 		} else {
 			log.Error("未找到会话ID %d 对应的客户端\n", msg.SessionId)
 		}

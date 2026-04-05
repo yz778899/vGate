@@ -18,7 +18,21 @@ type Session struct {
 }
 
 // 发送消息
-func (this *Session) SendMessage(msg *WebsocketMsg) {
+func (this *Session) SendToClient(msg *ToClientMsg) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(" panic: %v\n", err)
+			log.Error(" Stack Info:\n %s \n", debug.Stack())
+		}
+	}()
+	err := this.Conn.WriteJSON(msg)
+	if err != nil {
+		log.Error("SendToClient  error %v \n", err)
+	}
+}
+
+// 发送消息给服务
+func (this *Session) SendToService(msg *WebsocketMsg) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error(" panic: %v\n", err)
