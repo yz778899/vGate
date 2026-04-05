@@ -46,6 +46,18 @@ type ToClientMsg struct {
 	Data  json.RawMessage `json:"data"`  // 保留原始 JSON
 }
 
+func GetUnknownMsg(info string) *ToClientMsg {
+	m := unknownMsg{info}
+	data, _ := json.Marshal(m)
+	unknownMsg := ToClientMsg{Topic: "unknownMsg", Data: json.RawMessage(data)}
+	return &unknownMsg
+}
+
+// 未知消息回复
+type unknownMsg struct {
+	Info string `json:"info"`
+}
+
 func (this *ToClientMsg) TransitionOf(msg *WebsocketMsg) *ToClientMsg {
 	this.Topic = msg.Topic
 	this.Data = msg.Data

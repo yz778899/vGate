@@ -5,10 +5,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/yz778899/vGate/net/env"
+	"github.com/yz778899/vGate/net/env/config"
 	"github.com/yz778899/vGate/net/handler"
 	data "github.com/yz778899/vGate/net/msg"
 
@@ -17,21 +17,24 @@ import (
 
 // GateServer结构体表示一个WebSocket服务器，包含端口、路径、协程池和消息处理器等信息
 type GateServer struct {
-	Port    string
-	Path    string
+	conf *config.GateConfig
+	// Port    string
+	// Path    string
 	handler handler.ServiceAcceptInterface
 }
 
 // 配置 WsServer 的端口和路径
-func (this *GateServer) Config(Port int, Path string) *GateServer {
-	this.Port = strconv.Itoa(Port)
-	this.Path = Path
+func (this *GateServer) WithConfig(conf *config.GateConfig) *GateServer {
+	this.conf = conf
 	return this
 }
 
 // 创建 WsServer 实例
 func NewWsServer() *GateServer {
-	ws := GateServer{}
+	ws := GateServer{
+		conf:    &env.VGate.Config.Gate,
+		handler: &handler.GateHandler{},
+	}
 	return &ws
 }
 
@@ -43,9 +46,15 @@ func (this *GateServer) Handler(handler handler.ServiceAcceptInterface) *GateSer
 
 // 运行 WsServer，监听指定端口并处理 WebSocket 连接和消息
 func (this *GateServer) Run() error {
-	http.HandleFunc(this.Path, this.wsServerHandler)
-	env.Log.Info("WsServer run , port : " + this.Port)
-	return http.ListenAndServe(":"+this.Port, nil)
+	// if this.handler == nil {
+	// 	this.handler = &handler.GateHandler{}
+	// }
+	// if this.Conf == nil {
+	// 	this.Conf = &env.VGate.Config.Gate
+	// }
+	http.HandleFunc(this.conf.WsPath, this.wsServerHandler)
+	env.Log.Info(fmt.Sprintf("WsServer run , port : %v", this.conf.WsPort))
+	return http.ListenAndServe(fmt.Sprintf(":%v", this.conf.WsPort), nil)
 }
 
 // 配置 Upgrader，用于将 HTTP 连接升级为 WsServer
@@ -69,7 +78,7 @@ func (this *GateServer) wsServerHandler(w http.ResponseWriter, r *http.Request) 
 	defer conn.Close()
 
 	//读超时 10秒
-	conn.SetReadDeadline(time.Now().Add(time.Duration(env.VGate.Config.Gate.ReadOverTime) * time.Second))
+	conn.SetReadDeadline(time.Now().Add(time.Duration(this.conf.ReadOverTime) * time.Second))
 
 	session := this.handler.OnConnect(conn)
 

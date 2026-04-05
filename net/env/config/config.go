@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,17 +10,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type RootConfig struct {
-	// GateConfig
-	// LogConfig
-	Gate struct {
-		WsPath        string `yaml:"WsPath"`        //路径Config
-		WsPort        int    `yaml:"WsPort"`        //端口
-		SecretKey     string `yaml:"secretKey"`     //安全密钥
-		HeartbeatTime int    `yaml:"HeartbeatTime"` //心跳时间
-		ReadOverTime  int    `yaml:"ReadOverTime"`  //读超时
+type GateConfig struct {
+	WsPath        string `yaml:"WsPath"`        //路径Config
+	WsPort        int    `yaml:"WsPort"`        //端口
+	SecretKey     string `yaml:"secretKey"`     //安全密钥
+	HeartbeatTime int    `yaml:"HeartbeatTime"` //心跳时间
+	ReadOverTime  int    `yaml:"ReadOverTime"`  //读超时
+}
 
-	} `yaml:"gate"`
+type RootConfig struct {
+	Gate   GateConfig   `yaml:"gate"`
 	Logger LoggerConfig `yaml:"logger"`
 }
 
@@ -48,19 +48,25 @@ func GetConfig(path string) *RootConfig {
 		path = folder + "\\" + path
 	}
 
+	//反序列化到结构体
+	var config RootConfig
+
 	// 读取 YAML 文件
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatalf("读取文件失败: %v", err)
-	}
-
-	//反序列化到结构体
-	var config RootConfig
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		log.Fatalf("解析 YAML 失败: %v", err)
+		config = RootConfig{}
+		config.Gate.WsPath = "/"
+		config.Gate.WsPort = 6789
+		config.Gate.SecretKey = ""
+		config.Gate.HeartbeatTime = 3
+		config.Gate.ReadOverTime = 7
+		by, _ := json.MarshalIndent(config.Gate, "", "     ")
+		fmt.Printf("读取配置[config/"+path+"] 失败: \n error :  %v  \n 系统启用默认配置  \n  %v ", err, string(by))
 	} else {
-		//fmt.Printf("config = %#v", config)
+		err = yaml.Unmarshal(data, &config)
+		if err != nil {
+			log.Fatalf("解析 YAML 失败: %v", err)
+		}
 	}
 	return &config
 }

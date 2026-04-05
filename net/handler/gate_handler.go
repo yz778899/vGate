@@ -109,7 +109,10 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 		return nil
 	default:
 		log.Error("收到未知的消息 %#v ", string(msg.Data))
-		//fmt.Printf("  GateHandler :  OnMessage  %v \n", msg)
+		session := env.VGate.SessionMgr.GetSession(msg.SessionId)
+		if session != nil {
+			session.SendToClient(data.GetUnknownMsg("未知消息，请按规范请求"))
+		}
 	}
 
 	return nil

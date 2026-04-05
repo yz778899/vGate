@@ -23,7 +23,7 @@ var (
 
 func init() {
 	VGate = &gate{
-		Config:        config.GetConfig("config.yaml"),
+		Config:        config.GetConfig("config.vgate.yaml"),
 		SessionMgr:    data.SessionManagerInstance,
 		AppSessionMgr: data.ServerManagerInstance,
 		//SubHelper:     logic.SubHelper,
