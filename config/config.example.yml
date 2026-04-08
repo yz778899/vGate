@@ -1,6 +1,6 @@
 
 gate:
-  WsPort: 8080 #端口
+  WsPort: 5566 #端口
   WsPath: "/"
   secretKey: "sdklPY#$xks-23ksd%^dfskljkl[@#345]" #安全密钥
   HeartbeatTime: 50 #心跳时间（秒)  default = 5
@@ -11,7 +11,7 @@ debug: true #debug模式是否开启
 
 #日志配置
 logger:
-  level: "info"              # debug, info, warn, error
+  level: "error"              # debug, info, warn, error
   encoding: "console"           # json 或 console
   output_paths:
     - "stdout"               # 控制台输出

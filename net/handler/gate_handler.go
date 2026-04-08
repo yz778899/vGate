@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/gorilla/websocket"
 	"github.com/yz778899/vGate/net/env"
 	"github.com/yz778899/vGate/net/logic"
+	"github.com/yz778899/vGate/net/msg"
 	data "github.com/yz778899/vGate/net/msg"
+	"go.uber.org/zap"
 )
 
 // GateHandler网关处理器，负责处理WebSocket连接和消息
@@ -19,14 +20,14 @@ type GateHandler struct {
 func (this *GateHandler) checkSecretKey(key string) bool {
 
 	if !env.VGate.CheckSecretKey(key) {
-		fmt.Printf("密钥不匹配，拒绝处理消息\n")
+		Log.Error("密钥不匹配，拒绝处理消息")
 		return false
 	}
 	return true
 }
 
 // 收到消息
-func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
+func (this *GateHandler) OnMessage(ctx *WebSocketContext) error {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -38,21 +39,21 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 
 	conn.SetReadDeadline(time.Now().Add(time.Duration(env.VGate.Config.Gate.ReadOverTime) * time.Second))
 
-	custom := data.CustomMessage{
-		WebsocketMsg: *msg,
-		HideFields:   []string{"data", "secretKey"}, // 隐藏敏感字段
-	}
-	jsonData, _ := json.Marshal(custom)
+	// custom := data.CustomMessage{
+	// 	WebsocketMsg: *msg,
+	// 	HideFields:   []string{"data", "secretKey"}, // 隐藏敏感字段
+	// }
+	//jsonData, _ := json.Marshal(custom)
 	//jsonData, _ := json.MarshalIndent(custom, "", "  ")
 
-	fmt.Printf("  GateHandler :  OnMessage  %v \n", string(jsonData))
+	//fmt.Printf("  GateHandler :  OnMessage  %v \n", string(jsonData))
 
 	switch msg.Cmd {
 	case data.Heartbeat:
 		//心跳
 		err := conn.WriteJSON(msg)
 		if err != nil {
-			log.Error("SendMessage Heartbeat error %v \n", err)
+			Log.Error("SendMessage Heartbeat error  \n", zap.Any("err", err))
 		}
 		return nil
 	case data.Subscription:
@@ -64,7 +65,7 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 			if server != nil {
 				logic.SubHelper.AddSubscriptionInfo(msg.Topic, server)
 			} else {
-				log.Error("未找到会话ID %d 对应的服务器\n", msg.SessionId)
+				Log.Error("A未找到会话ID  对应的服务器\n", zap.Any("msg.SessionId", msg.SessionId), zap.Any("msg", msg))
 			}
 		}
 		return nil
@@ -79,7 +80,7 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 			if server != nil {
 				logic.SubHelper.UnSubscriptionInfo(msg.Topic, server)
 			} else {
-				log.Error("未找到会话ID %d 对应的服务器\n", msg.SessionId)
+				Log.Error("未找到会话ID  对应的服务器\n", zap.Any("sessionId", msg.SessionId), zap.Any("msg", msg))
 			}
 		}
 		return nil
@@ -99,16 +100,14 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 		//转发回复消息
 		session := env.VGate.SessionMgr.GetSession(msg.SessionId)
 		if session != nil {
-
 			toClient := data.ToClientMsg{}
-
 			session.SendToClient(toClient.TransitionOf(msg))
 		} else {
-			log.Error("未找到会话ID %d 对应的客户端\n", msg.SessionId)
+			Log.Error("未找到会话ID %d 对应的客户端\n", zap.Any("msg.SessionId", msg.SessionId), zap.Any("msg", msg))
 		}
 		return nil
 	default:
-		log.Error("收到未知的消息 %#v ", string(msg.Data))
+		Log.Error("收到未知的消息 %#v ", zap.Any("msg.data", msg.Data))
 		session := env.VGate.SessionMgr.GetSession(msg.SessionId)
 		if session != nil {
 			session.SendToClient(data.GetUnknownMsg("未知消息，请按规范请求"))
@@ -119,18 +118,21 @@ func (this *GateHandler) OnMessage(ctx WebSocketContext) error {
 }
 
 func (this *GateHandler) OnError(conn *websocket.Conn, err error) {
-	fmt.Printf("  GateHandler :  OnError  %v \n", err)
+	Log.Error("  GateHandler :  OnError  %v \n", zap.Any("err", err))
 }
 
 // 连接建立
 func (this *GateHandler) OnConnect(conn *websocket.Conn) *data.Session {
 	// 将新连接添加到会话管理器
 	session := env.VGate.SessionMgr.AddSession(&data.Session{
-		UUID:   -1,
+		ConnSession: &msg.ConnSession{
+			Conn: conn,
+			UUID: -1,
+		},
 		Status: 1,
-		Conn:   conn,
 	})
-	fmt.Printf("  GateHandler :  OnConnect sessionId = %#v \n", session.UUID)
+
+	Log.Debug("  GateHandler :  new Connect sessionId = ", zap.Any("session.UUID", session.UUID))
 
 	//通知客户端上线
 	lst := env.VGate.AppSessionMgr.GetAlls()
@@ -146,7 +148,7 @@ func (this *GateHandler) OnConnect(conn *websocket.Conn) *data.Session {
 
 // 连接断开
 func (this *GateHandler) OnDisconnect(session *data.Session) {
-	fmt.Printf("  GateHandler :  OnDisconnect session = %#v \n", session)
+	//fmt.Printf("  GateHandler :  OnDisconnect session = %#v \n", session)
 	env.VGate.SessionMgr.RemoveSession(session.UUID)
 	server := env.VGate.AppSessionMgr.GetServerOnly(session.UUID)
 	if server != nil {

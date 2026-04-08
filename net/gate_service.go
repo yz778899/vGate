@@ -2,7 +2,6 @@ package net
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/yz778899/vGate/net/env/config"
 	"github.com/yz778899/vGate/net/handler"
 	data "github.com/yz778899/vGate/net/msg"
+	"go.uber.org/zap"
 
 	ws "github.com/gorilla/websocket"
 )
@@ -86,7 +86,8 @@ func (this *GateServer) wsServerHandler(w http.ResponseWriter, r *http.Request) 
 		// 读取客户端消息
 		_, originalMsgByteArray, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("关闭通道:", err)
+			conn.Close()
+			Log.Info(" the connect close :", zap.Any("err", err))
 			this.handler.OnDisconnect(session)
 			break
 		}
@@ -104,7 +105,7 @@ func (this *GateServer) wsServerHandler(w http.ResponseWriter, r *http.Request) 
 		WsMsg, _ := data.GateDecoder(theMsg)
 
 		//fmt.Printf("data.GateDecoder 处理后的消息 msg = %#v \n", WsMsg)
-		this.handler.OnMessage(handler.WebSocketContext{
+		this.handler.OnMessage(&handler.WebSocketContext{
 			Session:  session,
 			Original: &originalMsgByteArray,
 			WsMsg:    WsMsg,

@@ -6,15 +6,12 @@ import (
 	"sync/atomic"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/gorilla/websocket"
 )
 
 // Session会话结构体，包含客户端ID、会话状态、HTTP请求和响应对象等信息
 type Session struct {
-	UUID   int64 //客户端ID
-	Status int8  //会话状态 0：未连接 1：已连接 2：已断开
-	Conn   *websocket.Conn
-	//Map    *sync.Map //可存数据用于扩展
+	*ConnSession
+	Status int8 //会话状态 0：未连接 1：已连接 2：已断开
 }
 
 // 发送消息
@@ -31,6 +28,11 @@ func (this *Session) SendToClient(msg *ToClientMsg) {
 	}
 }
 
+// 客户端发给网关
+func (this *Session) SendToGate(msg *ToClientMsg) {
+
+}
+
 // 发送消息给服务
 func (this *Session) SendToService(msg *WebsocketMsg) {
 	defer func() {
@@ -41,7 +43,7 @@ func (this *Session) SendToService(msg *WebsocketMsg) {
 	}()
 	err := this.Conn.WriteJSON(msg)
 	if err != nil {
-		log.Error("SendMessage  error %v \n", err)
+		log.Error("session SendMessage  error %v \n", err)
 	}
 }
 
@@ -57,7 +59,7 @@ var SessionManagerInstance *SessionManager
 // 初始化会话管理器实例
 func init() {
 	SessionManagerInstance = &SessionManager{
-		sessionMap: make(map[int64]*Session),
+		sessionMap: make(map[int64]*Session, 512),
 		uuid:       atomic.Int64{},
 	}
 	SessionManagerInstance.uuid.Store(10000 * 10000 * 20) //初始值设置为一个较大的数[20亿]，避免与实际客户端ID冲突

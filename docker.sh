@@ -10,7 +10,7 @@ if [ $? -eq 0 ]; then
     # 停止并删除已存在的同名容器
     docker rm -f vgate-app 2>/dev/null
     
-    # 运行新容器
+    # 运行新容器doc
     docker run -d \
         --name vgate-app \
         --restart unless-stopped \

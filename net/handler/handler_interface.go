@@ -8,7 +8,7 @@ import (
 // ServiceAcceptInterface 定义了处理WebSocket连接和消息的接口
 type ServiceAcceptInterface interface {
 	// 收到消息
-	OnMessage(ctx WebSocketContext) error
+	OnMessage(ctx *WebSocketContext) error
 	// 连接建立
 	OnConnect(conn *websocket.Conn) *msg.Session
 	// 连接断开

@@ -2,7 +2,6 @@ package msg
 
 import (
 	"fmt"
-	"runtime/debug"
 	"sync"
 	"sync/atomic"
 )
@@ -15,15 +14,17 @@ type AppServer struct {
 
 // 发送消息
 func (this *AppServer) SendMessage(msg any) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Printf(" panic: %v\n", err)
-			fmt.Printf(" Stack Info:\n %s \n", debug.Stack())
-		}
-	}()
+	// defer func() {
+	// 	if err := recover(); err != nil {
+	// 		fmt.Printf(" panic: %v\n", err)
+	// 		fmt.Printf(" Stack Info:\n %s \n", debug.Stack())
+	// 	}
+	// }()
+	defer this.Session.Mutex.Unlock()
+	this.Session.Mutex.Lock()
 	err := this.Session.Conn.WriteJSON(msg)
 	if err != nil {
-		fmt.Printf("SendMessage  error %v \n", err)
+		fmt.Printf("service SendMessage  error %v \n", err)
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/gofiber/fiber/v2/log"
 	appmsg "github.com/yz778899/vGate/cmd/app/app_msg"
 	"github.com/yz778899/vGate/net/handler"
 	"github.com/yz778899/vGate/net/logic"
@@ -37,23 +36,23 @@ func (this *LoginHandler) BeforeProcess() error {
 func (this *LoginHandler) Process() error {
 
 	sid := this.Msg.SessionId
-	newId := int64(1000 + rand.Intn(9000))
+	newId := sid
+	info := "登录成功!"
+	if sid > 10000*10000 {
+		newId = int64(1000 + rand.Intn(9000))
+		//log.Info("摸拟登录中……")
+		info = fmt.Sprintf("登录成功! 你的用户名 %v  密码 %v, 原sessionId = %v  新id = %v  !  向网关 发送请求变更  ！", this.Request.User, this.Request.Pass, sid, newId)
+		//用户session ID变更 消息结构体
+		changeMsg := logic.SessionIdChange{SessionId: sid,
+			NewId: newId}
+		logic.Sender.Notice(logic.Session_Id_Change, changeMsg)
 
-	log.Info("摸拟登录中……")
-	info := fmt.Sprintf("登录成功! 你的用户名 %v  密码 %v, 原sessionId = %v  新id = %v  !  向网关 发送请求变更  ！", this.Request.User, this.Request.Pass, sid, newId)
-
-	//用户session ID变更 消息结构体
-	changeMsg := logic.SessionIdChange{SessionId: sid,
-		NewId: newId}
-	logic.Sender.Notice(logic.Session_Id_Change, changeMsg)
-
-	// this.Session.SendMessage(logic.Session_Id_Change, changeMsg)
+	}
 
 	resp := &appmsg.LoginResponse{Info: info}
-
 	logic.Sender.Resp(newId, this.Msg.GetTopic(), resp)
 
-	log.Info(info)
+	//log.Info(info)
 	return nil
 }
 
