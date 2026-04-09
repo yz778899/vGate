@@ -183,14 +183,15 @@ func (this *AppService) sendHeartbeat() {
 
 	for {
 		<-ticker.C // 阻塞等待 ticker 信号
-		if err := this.Session.Conn.WriteJSON(msg.HeartbeatMsg()); err != nil {
+		this.Session.Mutex.Lock()
+		err := this.Session.Conn.WriteJSON(msg.HeartbeatMsg())
+		this.Session.Mutex.Unlock()
+		if err != nil {
 			env.Log.Info(fmt.Sprintf("send heartbeatMsg faild: %v", err))
 			return
 		}
 		// 设置读取超时
-		this.Session.Mutex.Lock()
 		this.Session.Conn.SetReadDeadline(time.Now().Add(time.Duration(env.VGate.Config.Gate.ReadOverTime) * time.Second))
-		this.Session.Mutex.Unlock()
 		env.Log.Info("send heartbeatMsg")
 	}
 }

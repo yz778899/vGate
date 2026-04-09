@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// 启动 10000 个客户端连续发送登录消息
-	time.Sleep(time.Millisecond * 1000 * 1)
+	time.Sleep(time.Millisecond * 1000 * 10)
 	start := time.Now()
 	for i := 0; i < 1000; i++ {
 		go func(id int) {

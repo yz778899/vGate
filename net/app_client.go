@@ -171,8 +171,11 @@ func (this *AppClient) sendHeartbeat() {
 
 	for {
 		<-ticker.C // 阻塞等待 ticker 信号
-		if err := this.ConnSession.Conn.WriteJSON(data.HeartbeatMsg()); err != nil {
-			env.Log.Info(fmt.Sprintf("发送 heartbeatMsg 失败: %v", err))
+		this.ConnSession.Mutex.Lock()
+		err := this.ConnSession.Conn.WriteJSON(msg.HeartbeatMsg())
+		this.ConnSession.Mutex.Unlock()
+		if err != nil {
+			env.Log.Info(fmt.Sprintf("send heartbeatMsg faild: %v", err))
 			return
 		}
 		// 设置读取超时
