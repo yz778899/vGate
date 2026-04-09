@@ -8,6 +8,11 @@ type MessageTask struct {
 	Msg       *msg.WebsocketMsg
 }
 
-func (this *MessageTask) SlaveId() int {
+func (this *MessageTask) GetZoneId() int {
 	return int(this.SessionId)
+}
+
+type Task interface {
+	//使用该值以判断使用哪个 slave来处理
+	GetZoneId() int
 }

@@ -28,7 +28,7 @@ func init() {
 type AppService struct {
 	*msg.Session
 	Url           string
-	Pool          *pool.QueueMaster
+	Pool          *pool.QueueMaster[*pool.MessageTask]
 	handler       handler.ServiceAcceptInterface
 	isConnected   bool
 	maxRetries    int           //最大重连次数
@@ -46,7 +46,7 @@ func (this *AppService) Handler(handler handler.ServiceAcceptInterface) *AppServ
 func (this *AppService) Config(url string, poolNum int) *AppService {
 	this.Url = url
 	this.poolNum = poolNum
-	this.Pool = pool.NewCoroutineGroup(1, "WsLine_msg_group", this.poolNum)
+	this.Pool = pool.NewCoroutineGroup[*pool.MessageTask](1, "WsLine_msg_group", this.poolNum)
 	return this
 }
 

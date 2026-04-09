@@ -14,7 +14,7 @@ import (
 // ServerHandler 服务端 处理器，负责处理WebSocket连接和消息
 type ServerHandler struct {
 	Session *msg.Session
-	Pool    *pool.QueueMaster
+	Pool    *pool.QueueMaster[*pool.MessageTask]
 }
 
 var Log *zap.Logger

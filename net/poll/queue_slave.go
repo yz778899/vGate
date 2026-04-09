@@ -9,22 +9,22 @@ import (
 )
 
 // 队列处理线程
-type QueueSlave struct {
+type QueueSlave[T Task] struct {
 	//消息队列
-	queue []*MessageTask
+	queue []*T
 	//消息处理器
-	MsgHandler Handler
+	MsgHandler Handler[T]
 	Name       string
 	Id         int
 	mutex      sync.Mutex
 }
 
-func (this *QueueSlave) Init() {
-	this.queue = make([]*MessageTask, 0)
+func (this *QueueSlave[T]) Init() {
+	this.queue = make([]*T, 0)
 }
 
 // 启动协程，持续处理消息 会阻塞 应当以  go Start() 启动
-func (this *QueueSlave) Start() {
+func (this *QueueSlave[T]) Start() {
 
 	count := 0
 	for {
@@ -40,7 +40,7 @@ func (this *QueueSlave) Start() {
 			task := this.queue[0]
 			this.queue = this.queue[1:]
 			this.mutex.Unlock()
-			this.Handler(task)
+			this.Handler(*task)
 
 			//fmt.Printf(" handler task  = %v ", task)
 
@@ -48,7 +48,6 @@ func (this *QueueSlave) Start() {
 		}
 		//处理10条数据就休眠
 		if count%5 == 0 {
-			//time.Sleep(time.Millisecond * 1)
 			runtime.Gosched()
 		}
 
@@ -56,7 +55,7 @@ func (this *QueueSlave) Start() {
 }
 
 // 处理单条消息
-func (this *QueueSlave) Handler(task *MessageTask) {
+func (this *QueueSlave[T]) Handler(task T) {
 
 	defer func() {
 		if p := recover(); p != nil {
@@ -76,7 +75,7 @@ func (this *QueueSlave) Handler(task *MessageTask) {
 }
 
 // 接受消息
-func (this *QueueSlave) Accept(task *MessageTask) {
+func (this *QueueSlave[T]) Accept(task *T) {
 	defer this.mutex.Unlock()
 	this.mutex.Lock()
 	this.queue = append(this.queue, task)

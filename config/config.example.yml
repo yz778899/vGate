@@ -11,7 +11,7 @@ debug: true #debug模式是否开启
 
 #日志配置
 logger:
-  level: "error"              # debug, info, warn, error
+  level: "info"              # debug, info, warn, error
   encoding: "console"           # json 或 console
   output_paths:
     - "stdout"               # 控制台输出

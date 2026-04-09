@@ -25,10 +25,16 @@ func main() {
 	//业务处理器
 	app.Handler(&handler.ServerHandler{Pool: app.Pool})
 	//服务端收到消息,初步过滤后.即会将消息组装成任务,进入任务队列,然后再并行处理,
+
 	app.Pool.Handler(func(task *pool.MessageTask) {
 		//此处是设置任务子线程的具体处理方法
 		handler.RegistryInstance.RunHandler(task.Msg, AppService.Session)
 	})
+
+	// app.Pool.Handler(func(task *pool.MessageTask) {
+	// 	//此处是设置任务子线程的具体处理方法
+	// 	//handler.RegistryInstance.RunHandler(task.Msg, AppService.Session)
+	// })
 	//请求连接
 	app.Connect(func(conn *websocket.Conn) {
 		//绑定连接，向网关订阅 登录注册等 topic
