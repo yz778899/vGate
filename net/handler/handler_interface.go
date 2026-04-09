@@ -34,7 +34,7 @@ type MsgHandlerInterface interface {
 	OnError(stage string, err error) // 错误处理钩子
 }
 
-type MsgHandlerCreate struct {
+type Creater struct {
 	Topic string
 	//创建实例的方法
 	CreateFunc func(topic string, session *msg.Session, msg *msg.WebsocketMsg) MsgHandlerInterface

@@ -47,8 +47,8 @@ func (this *ServerHandler) OnMessage(ctx *WebSocketContext) error {
 
 		//先进队列,再并行处理业务
 		task := pool.MessageTask{
-			SessionId: wsMsg.SessionId,
-			Msg:       wsMsg,
+			//SessionId: wsMsg.SessionId,
+			Msg: wsMsg,
 		}
 		this.Pool.Accept(&task)
 

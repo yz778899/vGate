@@ -8,75 +8,75 @@ import (
 	"github.com/yz778899/vGate/net/msg"
 )
 
-// Registry 处理器注册中心
-type Registry struct {
-	MsgHandlerCreates map[string]MsgHandlerCreate // topic -> MsgHandlerCreate
-	mu                sync.RWMutex
+// AppRoute 消息路由
+type AppRoute struct {
+	Creaters map[string]Creater // topic -> MsgHandlerCreate
+	mu       sync.RWMutex
 }
 
 var (
-	RegistryInstance *Registry
+	Default *AppRoute
 )
 
-// NewRegistry 创建注册中心
-func NewRegistry() *Registry {
-	if RegistryInstance == nil {
-		RegistryInstance = &Registry{
-			MsgHandlerCreates: make(map[string]MsgHandlerCreate),
+// NewAppRoute 创建注册中心
+func NewAppRoute() *AppRoute {
+	if Default == nil {
+		Default = &AppRoute{
+			Creaters: make(map[string]Creater),
 		}
 	}
-	return RegistryInstance
+	return Default
 }
 
-// Register 注册处理器
-func (r *Registry) Register(handlerCreate MsgHandlerCreate) error {
+// Add 注册处理器
+func (r *AppRoute) Add(handlerCreate Creater) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	topic := handlerCreate.Topic
-	if _, exists := r.MsgHandlerCreates[topic]; exists {
+	if _, exists := r.Creaters[topic]; exists {
 		return fmt.Errorf("MsgHandlerCreate for topic %s already registered", topic)
 	}
 
-	r.MsgHandlerCreates[topic] = handlerCreate
+	r.Creaters[topic] = handlerCreate
 	return nil
 }
 
 // GetMsgHandlerCreate 根据主题获取处理器
-func (r *Registry) GetMsgHandlerCreate(topic string) (MsgHandlerCreate, bool) {
+func (r *AppRoute) GetMsgHandlerCreate(topic string) (Creater, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	MsgHandlerCreate, ok := r.MsgHandlerCreates[topic]
+	MsgHandlerCreate, ok := r.Creaters[topic]
 	return MsgHandlerCreate, ok
 }
 
-// Unregister 注销处理器
-func (r *Registry) Unregister(topic string) error {
+// Remove 注销处理器
+func (r *AppRoute) Remove(topic string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, exists := r.MsgHandlerCreates[topic]; !exists {
+	if _, exists := r.Creaters[topic]; !exists {
 		return fmt.Errorf("MsgHandlerCreate for topic %s not found", topic)
 	}
 
-	delete(r.MsgHandlerCreates, topic)
+	delete(r.Creaters, topic)
 	return nil
 }
 
 // ListTopics 列出所有已注册的主题
-func (r *Registry) ListTopics() []string {
+func (r *AppRoute) ListTopics() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	topics := make([]string, 0, len(r.MsgHandlerCreates))
-	for topic := range r.MsgHandlerCreates {
+	topics := make([]string, 0, len(r.Creaters))
+	for topic := range r.Creaters {
 		topics = append(topics, topic)
 	}
 	return topics
 }
 
 // 创建一个处理器，并控制它的生周期运行
-func (r *Registry) RunHandler(msg *msg.WebsocketMsg, session *msg.Session) error {
+func (r *AppRoute) Exec(msg *msg.WebsocketMsg, session *msg.Session) error {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -84,7 +84,7 @@ func (r *Registry) RunHandler(msg *msg.WebsocketMsg, session *msg.Session) error
 		}
 	}()
 
-	creator, ok := RegistryInstance.GetMsgHandlerCreate(msg.Topic)
+	creator, ok := Default.GetMsgHandlerCreate(msg.Topic)
 	if ok {
 
 		hdl := creator.CreateFunc(msg.Topic, session, msg)

@@ -5,12 +5,20 @@ import (
 	appmsg "github.com/yz778899/vGate/cmd/app/app_msg"
 	"github.com/yz778899/vGate/net/handler"
 	"github.com/yz778899/vGate/net/logic"
+	"github.com/yz778899/vGate/net/msg"
 )
 
 // 游戏列表处理器
 type GameListHandler struct {
 	handler.BaseMsgHandler
 	Request *appmsg.GameListRequest
+}
+
+func NewGameListHandler(topic string, session *msg.Session, msg *msg.WebsocketMsg) handler.MsgHandlerInterface {
+	hdl := GameListHandler{}
+	hdl.Topic = topic
+	hdl.Msg = msg
+	return &hdl
 }
 
 // 处理前
